@@ -96,7 +96,7 @@ struct commit *del_commit(struct commit *victim)
 void display_commit(struct commit *c)
 {
 	/* TODO : Exercice 3 - Question 4 */
-  printf("%2d:",(int)c->id);
+  printf("%2lu:",c->id);
   display_version(&(c->version), isUnstableBis);
   printf ("%s\n",c->comment) ;
 }
@@ -109,7 +109,7 @@ void display_history(struct commit *from)
 {
 	/* TODO : Exercice 3 - Question 4 */
   int i;
-  for (from; from != NULL; from = from->next) {
+  for (; from != NULL; from = from->next) {
     display_commit(from);
     i++;
   }
@@ -124,13 +124,13 @@ void display_history(struct commit *from)
 void infos(struct commit *from, int major, unsigned long minor)
 {
 	/* TODO : Exercice 3 - Question 6 */
-  for (from ; from != NULL; from = from->next)
+  for (; from != NULL; from = from->next)
     if (from->version.major == major && from->version.minor == minor){
       display_commit (from);
       return;
     }
 
-  printf("%2d -%2d : Not here !!!\n",major, minor);
+  printf("%2d -%2lu : Not here !!!\n",major, minor);
 }
 
 /**
