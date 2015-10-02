@@ -17,9 +17,11 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
 {
 	/* TODO : Exercice 3 - Question 2 */
   struct commit *c = (struct commit*) malloc(sizeof(struct commit));
-  c->version.major=major;
-  c->version.minor=minor;
-  c->comment=strdup(comment);
+  c->id = nextId++;
+  c->version.major = major;
+  c->version.minor = minor;
+  c->version.flags = 0;
+  c->comment = strdup(comment);
   c->next = NULL;
   c->prev = NULL;
   
@@ -35,8 +37,10 @@ static struct commit *insert_commit(struct commit *from, struct commit *new)
 {
   
 	/* TODO : Exercice 3 - Question 3 */
-  /*from->prev->prev=new;
-    new->next=from->next;*/
+  new->next = from->next;
+
+  if (from->next)
+    from->next->prev = new;
   
   from->next=new;
   new->prev=from;
@@ -79,7 +83,10 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 struct commit *del_commit(struct commit *victim)
 {
 	/* TODO : Exercice 3 - Question 5 */
-  return NULL;
+  victim->prev->next = victim->next;
+  victim->next->prev = victim->prev;
+  
+  return victim;
 }
 
 /**
@@ -89,8 +96,9 @@ struct commit *del_commit(struct commit *victim)
 void display_commit(struct commit *c)
 {
 	/* TODO : Exercice 3 - Question 4 */
+  printf("%2d:",(int)c->id);
   display_version(&(c->version), isUnstableBis);
-  printf ("%12s\n",c->comment) ;
+  printf ("%s\n",c->comment) ;
 }
 
 /**
@@ -101,12 +109,11 @@ void display_history(struct commit *from)
 {
 	/* TODO : Exercice 3 - Question 4 */
   int i;
-  printf("\n");
   for (from; from != NULL; from = from->next) {
-    printf("%2d:",i);
     display_commit(from);
     i++;
   }
+  printf("\n");
 }
 
 /**
@@ -117,6 +124,13 @@ void display_history(struct commit *from)
 void infos(struct commit *from, int major, unsigned long minor)
 {
 	/* TODO : Exercice 3 - Question 6 */
+  for (from ; from != NULL; from = from->next)
+    if (from->version.major == major && from->version.minor == minor){
+      display_commit (from);
+      return;
+    }
+
+  printf("%2d -%2d : Not here !!!\n",major, minor);
 }
 
 /**
