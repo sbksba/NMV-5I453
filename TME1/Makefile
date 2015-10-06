@@ -11,7 +11,7 @@ ifeq ($(DEBUG),1)
 CFLAGS += -g
 endif
 
-all: directories TESTVERSION TEST TESTCOMMIT TESTCOMMITEXO4
+all: directories TESTVERSION TEST TESTCOMMIT TESTCOMMITEXO4 TESTCOMMITEXO5
 
 directories: ${OBJ} ${BIN} ${LIB}
 
@@ -34,6 +34,9 @@ ${OBJ}/commit.o: ${SRC}/commit.c
 ${OBJ}/commitEXO4.o: ${SRC}/commitEXO4.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
+${OBJ}/commitEXO5.o: ${SRC}/commitEXO5.c
+	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
+
 ${OBJ}/testVersion.o: ${SRC}/testVersion.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
@@ -43,13 +46,16 @@ ${OBJ}/testCommit.o: ${SRC}/testCommit.c
 ${OBJ}/testCommitEXO4.o: ${SRC}/testCommitEXO4.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
+${OBJ}/testCommitEXO5.o: ${SRC}/testCommitEXO5.c
+	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
+
 ${OBJ}/test.o: ${SRC}/test.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
 # ============
 # BIBLIOTHEQUE
 # ============
-${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commit.o ${OBJ}/commitEXO4.o
+${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commit.o ${OBJ}/commitEXO4.o ${OBJ}/commitEXO5.o
 	ar -rs $@ $^
 
 # ==========
@@ -62,6 +68,9 @@ TESTCOMMIT: $(LIB)/libcommit.a ${OBJ}/testCommit.o
 	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
 
 TESTCOMMITEXO4: $(LIB)/libcommit.a ${OBJ}/testCommitEXO4.o
+	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
+
+TESTCOMMITEXO5: $(LIB)/libcommit.a ${OBJ}/testCommitEXO5.o
 	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
 
 TEST: ${OBJ}/test.o ${OBJ}/version.o
