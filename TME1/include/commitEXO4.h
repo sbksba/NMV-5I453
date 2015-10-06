@@ -10,7 +10,7 @@ struct commit{
   unsigned long id;
   struct version version;
   char *comment;
-  struct list_head *lhead;
+  struct list_head lhead;
 };
 
 struct commit *new_commit(unsigned short major, unsigned long minor, char *comment);
