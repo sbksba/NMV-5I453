@@ -16,7 +16,7 @@ int isUnstableBis(struct version *v)
 void display_version(struct version *v, int(*ptrfonction)(struct version *))
 {
 	printf("%2u-%lu %-20s", v->major, v->minor,
-	       (*ptrfonction)(v) ? "(unstable)" : "(stable)	");
+	       (*ptrfonction)(v) ? "(unstable)" : "(stable)");
 }
 
 int cmp_version(struct version *v, int major, int minor)

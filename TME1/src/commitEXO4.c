@@ -22,8 +22,7 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
   c->version.minor = minor;
   c->version.flags = 0;
   c->comment = strdup(comment);
-  c->lhead = (struct list_head*) malloc(sizeof(struct list_head));
-  INIT_LIST_HEAD(c->lhead);
+  INIT_LIST_HEAD(&c->lhead);
   
   return c;
 }
@@ -36,7 +35,7 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
 static struct commit *insert_commit(struct commit *from, struct commit *new)
 {
   
-  list_add(from->lhead, new->lhead);
+  list_add(&new->lhead, &from->lhead);
   return new;
 }
 
@@ -72,7 +71,7 @@ struct commit *add_major_commit(struct commit *from, char *comment)
   */
 struct commit *del_commit(struct commit *victim)
 {
-  list_del(victim->lhead);
+  list_del(&victim->lhead);
   return NULL;
 }
 
@@ -82,9 +81,8 @@ struct commit *del_commit(struct commit *victim)
   */
 void display_commit(struct commit *c)
 {
-  printf("%2lu:",c->id);
-  display_version(&(c->version), isUnstableBis);
-  printf ("%s\n",c->comment) ;
+  printf("%2lu: %2u-%lu %s \t'%s'\n",c->id,c->version.major,c->version.minor,
+	 isUnstableBis(&c->version)? "(unstable)" : "(stable)", c->comment);
 }
 
 /**
@@ -94,8 +92,11 @@ void display_commit(struct commit *c)
 void display_history(struct commit *from)
 {
   struct list_head* tmp;
-  list_for_each(tmp, from->lhead)
-    display_commit((struct commit*)(tmp - offsetof (struct commit, lhead)));
+
+  display_commit(from);
+  list_for_each(tmp, &from->lhead)
+    display_commit(container_of(tmp,struct commit, lhead));
+  printf("\n");
 }
 
 /**
@@ -108,8 +109,13 @@ void infos(struct commit *from, int major, unsigned long minor)
   struct commit* commit;
   struct list_head* tmp;
 
-  list_for_each(tmp, from->lhead) {
-    commit = (struct commit*)(tmp - offsetof (struct commit, lhead));
+  if (from->version.major == major && from->version.minor == minor){
+    display_commit(from);
+    return;
+  }
+  
+  list_for_each(tmp, &from->lhead){
+    commit = container_of(tmp, struct commit, lhead);
     if (commit->version.major == major && commit->version.minor == minor){
       display_commit(commit);
       return;
