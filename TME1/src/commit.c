@@ -96,9 +96,8 @@ struct commit *del_commit(struct commit *victim)
 void display_commit(struct commit *c)
 {
 	/* TODO : Exercice 3 - Question 4 */
-  printf("%2lu:",c->id);
-  display_version(&(c->version), isUnstableBis);
-  printf ("%s\n",c->comment) ;
+  printf("%2lu: %2u-%lu %s \t'%s'\n",c->id,c->version.major,c->version.minor,
+	 isUnstableBis(&c->version)? "(unstable)" : "(stable)", c->comment);
 }
 
 /**
@@ -108,11 +107,8 @@ void display_commit(struct commit *c)
 void display_history(struct commit *from)
 {
 	/* TODO : Exercice 3 - Question 4 */
-  int i;
-  for (; from != NULL; from = from->next) {
+  for (; from != NULL; from = from->next)
     display_commit(from);
-    i++;
-  }
   printf("\n");
 }
 
@@ -149,7 +145,3 @@ struct commit *commitOf(struct version *version)
 
   return (struct commit*) ((unsigned long) version - offset) ;
 }
-
-
-
-
