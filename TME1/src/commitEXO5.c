@@ -5,6 +5,7 @@
 #include"commitEXO5.h"
 #include"version.h" 
 #include"list.h"
+#include "color.h"
 
 static int nextId = 0;
 
@@ -73,7 +74,7 @@ struct commit *add_major_commit(struct commit *from, char *comment)
   list_add (&c->major_list, &from->major_list);
 
   if (&c->major_list  == &from->major_list){
-    printf ("ok");
+    printf(OK);
   }
   
   return c;
@@ -96,9 +97,8 @@ struct commit *del_commit(struct commit *victim)
   */
 void display_commit(struct commit *c)
 {
-  printf("%2lu:",c->id);
-  display_version(&(c->version), isUnstableBis);
-  printf ("%s\n",c->comment) ;
+  printf("%2lu: %2u-%lu %s \t'%s'\n",c->id,c->version.major,c->version.minor,
+	 isUnstableBis(&c->version)? "(unstable)" : "(stable)", c->comment);
 }
 
 /**
@@ -108,8 +108,11 @@ void display_commit(struct commit *c)
 void display_history(struct commit *from)
 {
   struct list_head* tmp;
+
+  display_commit(from);
   list_for_each(tmp, &from->lhead)
     display_commit (container_of(tmp,struct commit, lhead));
+  printf("\n");
 }
 
 /**
@@ -127,6 +130,7 @@ void infos(struct commit *from, int major, unsigned long minor)
     return;
   }
 
+  printf("INFO 1\n");
   /* Parcours de la liste des majeurs */
   list_for_each(tmp, &from->major_list){
     commitI = container_of(tmp, struct commit, major_list);
@@ -136,7 +140,7 @@ void infos(struct commit *from, int major, unsigned long minor)
 	display_commit (commitI);
 	return;
       }
-
+      printf("\tTEST\n");
       printf("%d\n", commitI->version.major);
 
       list_for_each(tmp, &commitI->lhead){
@@ -168,4 +172,16 @@ struct commit *commitOf(struct version *version)
   offset = (unsigned long) &tmp.version - (unsigned long) &tmp ;
 
   return (struct commit*) ((unsigned long) version - offset) ;
+}
+
+/**
+ * freeHistory - libere la memoire occupe par l'ensemble d'un liste de commit
+ * @from: commit qui sera supprime
+ *
+ */
+void freeHistory(struct commit *from)
+{
+  
+  
+  free(from);
 }
