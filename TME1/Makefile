@@ -11,7 +11,7 @@ ifeq ($(DEBUG),1)
 CFLAGS += -g
 endif
 
-all: directories TESTVERSION TEST TESTCOMMIT TESTCOMMITEXO4 TESTCOMMITEXO5
+all: directories TESTVERSION TEST TESTCOMMIT
 
 directories: ${OBJ} ${BIN} ${LIB}
 
@@ -55,7 +55,7 @@ ${OBJ}/test.o: ${SRC}/test.c
 # ============
 # BIBLIOTHEQUE
 # ============
-${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commit.o ${OBJ}/commitEXO4.o ${OBJ}/commitEXO5.o
+${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commitEXO5.o #${OBJ}/commit.o ${OBJ}/commitEXO4.o
 	ar -rs $@ $^
 
 # ==========
@@ -64,17 +64,11 @@ ${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commit.o ${OBJ}/commitEXO4.o ${OBJ}
 TESTVERSION: $(LIB)/libcommit.a ${OBJ}/testVersion.o 
 	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
 
-TESTCOMMIT: $(LIB)/libcommit.a ${OBJ}/testCommit.o
-	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
-
-TESTCOMMITEXO4: $(LIB)/libcommit.a ${OBJ}/testCommitEXO4.o
-	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
-
-TESTCOMMITEXO5: $(LIB)/libcommit.a ${OBJ}/testCommitEXO5.o
-	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
-
 TEST: ${OBJ}/test.o ${OBJ}/version.o
 	${CC} -o ${BIN}/$@ $^
+
+TESTCOMMIT: $(LIB)/libcommit.a ${OBJ}/testCommitEXO5.o
+	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
 
 .PHONY: all proper clean cleanall
 
