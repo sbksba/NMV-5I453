@@ -40,6 +40,18 @@ static struct commit *insert_commit(struct commit *from, struct commit *new)
 {
 	/* TODO : Exercice 3 - Question 3 */
   list_add  (&new->lhead, &from->lhead);
+
+  /* Si les majeurs correspondent, ils ont le meme parent, sinon
+   * le nouveau est son propre pere.
+   */
+  if (new->version.minor == 0){
+    list_add(&new->major_list, &(from->major_parent->major_list));
+    new->major_parent = new;
+  }
+  else{
+    new->major_parent = from->major_parent;
+  }
+     
   return new;
 }
 
@@ -52,12 +64,7 @@ struct commit *add_minor_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major, from->version.minor + 1, comment);
-
-  c->major_parent = from->major_parent;
-  insert_commit(from, c);
-  /*list_add  (&c->lhead, &from->lhead);*/
-
-  return c;
+  return insert_commit(from, c);
 }
 
 /**
@@ -69,15 +76,7 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major + 1, 0, comment);
-
-  insert_commit(from, c);
-  list_add (&c->major_list, &from->major_list);
-
-  if (&c->major_list  == &from->major_list){
-    printf(OK);
-  }
-  
-  return c;
+  return insert_commit(from, c);
 }
 
 /**
@@ -107,11 +106,16 @@ void display_commit(struct commit *c)
   */
 void display_history(struct commit *from)
 {
-  struct list_head* tmp;
+  struct commit *ptr = from;
 
+  if (from == NULL){
+    printf("NULL\n");
+    return;
+  }
+  
   display_commit(from);
-  list_for_each(tmp, &from->lhead)
-    display_commit (container_of(tmp,struct commit, lhead));
+  list_for_each_entry(ptr, &(from->lhead), lhead)
+    display_commit (ptr);
   printf("\n");
 }
 
@@ -122,39 +126,46 @@ void display_history(struct commit *from)
   */
 void infos(struct commit *from, int major, unsigned long minor)
 {
-  struct commit* commitI, *commitII;
-  struct list_head* tmp;
-  
-  if (from->version.major == major && from->version.minor == minor){
-    display_commit (from);
+  struct commit* ptr = from->major_parent;
+  struct commit* ptr2;
+
+  /* Si version majeur est la bonne, on pointe sur le précedent pour qu'il soit
+     accedé par le foreach */
+  if(ptr->version.major == major) ptr = list_next_entry(ptr, major_list);
+
+  /* On se déplace jusqu'à la bonne version majeure */
+  list_for_each_entry(ptr, &(from->major_list), major_list) {
+    if(ptr->version.major == major)
+      break;
+  }
+
+  /* Si pas la version majeur recherchée dans la liste */
+  if(ptr->version.major != major) {
+    printf("%2d-%2lu : Not here !!!\n",major, minor);
     return;
   }
 
-  printf("INFO 1\n");
-  /* Parcours de la liste des majeurs */
-  list_for_each(tmp, &from->major_list){
-    commitI = container_of(tmp, struct commit, major_list);
+  /* Si la version mineure est la bonne on a trouvé */
+  if(ptr->version.major != major) {
+    display_commit(ptr);
+    return;
+  }
 
-    if (commitI->version.major == major){
-      if (commitI->version.minor == minor){
-	display_commit (commitI);
-	return;
-      }
-      printf("\tTEST\n");
-      printf("%d\n", commitI->version.major);
+  ptr2 = ptr;
 
-      list_for_each(tmp, &commitI->lhead){
-	commitII = container_of(tmp, struct commit, lhead);
-
-	if (commitII->version.minor == minor){
-	  display_commit (commitII);
-	  return;
-	}
-      }
+  /* Parcours tous les elts sauf le premier */
+  list_for_each_entry(ptr, &(ptr2->lhead), lhead) {
+    if (ptr->version.major != major) {
+      /* On a dépassé les bonnes majeures, on sort de la boucle */
       break;
+    } else if(ptr->version.major == major && ptr->version.minor == minor) {
+      /* On a trouvé la bonne version, on s'arrête */
+      display_commit(ptr);
+      return;
     }
   }
-  printf("%2d -%2lu : Not here !!!\n",major, minor);
+  
+  printf("%2d-%2lu : Not here !!!\n",major, minor);
 }
 
 /**
@@ -181,7 +192,5 @@ struct commit *commitOf(struct version *version)
  */
 void freeHistory(struct commit *from)
 {
-  
-  
   free(from);
 }

@@ -22,10 +22,10 @@ int main(int argc, char const* argv[])
 	del_commit(victim);
 	display_history(first);
 
-	tmp = add_major_commit(last, "Realse 1");
+	tmp = add_major_commit(last, "Release 1");
 	tmp = add_minor_commit(tmp, "Work 1");
 	tmp = add_minor_commit(tmp, "Work 2");
-	tmp = add_major_commit(tmp, "Realse 2");
+	tmp = add_major_commit(tmp, "Release 2");
 	tmp = add_minor_commit(tmp, "Work 1");
 	display_history(first);
 
