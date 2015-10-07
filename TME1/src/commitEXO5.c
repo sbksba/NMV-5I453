@@ -24,7 +24,7 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
   c->version.major = major;
   c->version.minor = minor;
   c->version.flags = 0;
-  c->comment = comment;
+  c->comment = strdup(comment); /*PETITE FUITE*/
   
   INIT_LIST_HEAD (&c->lhead);
   INIT_LIST_HEAD (&c->major_list);
@@ -198,7 +198,7 @@ void freeHistory()
   
   list_for_each_safe(pos, tmp, &list_complete){
     c = container_of(pos, struct commit, lhead);
-    /*free(c->comment);*/
+    free(c->comment);
     free(c);
   }
 }
