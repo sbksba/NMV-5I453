@@ -3,10 +3,16 @@
 
 #include"commitEXO5.h"
 
+extern struct list_head list_complete;
+extern struct list_head list_major;
+
 int main(int argc, char const* argv[])
 {
         struct commit *first = new_commit(0, 0, "First !");
 	struct commit *tmp, *victim, *last;
+
+	list_add (&first->lhead, &list_complete);
+	list_add (&first->major_list, &list_major);
 	
 	display_commit(first);
 	printf("\n");

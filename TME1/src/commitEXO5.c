@@ -8,6 +8,8 @@
 #include "color.h"
 
 static int nextId = 0;
+LIST_HEAD(list_complete); /*RED LIST*/
+LIST_HEAD(list_major);    /*GREEN LIST*/
 
 /**
   * new_commit - alloue et initialise une structure commit correspondant au parametre
@@ -51,7 +53,7 @@ static struct commit *insert_commit(struct commit *from, struct commit *new)
   else{
     new->major_parent = from->major_parent;
   }
-     
+
   return new;
 }
 
@@ -106,16 +108,9 @@ void display_commit(struct commit *c)
   */
 void display_history(struct commit *from)
 {
-  struct commit *ptr = from;
-
-  if (from == NULL){
-    printf("NULL\n");
-    return;
-  }
-  
-  display_commit(from);
-  list_for_each_entry(ptr, &(from->lhead), lhead)
-    display_commit (ptr);
+  struct list_head* tmp;
+  list_for_each (tmp, &list_complete)
+    display_commit(container_of (tmp, struct commit, lhead));
   printf("\n");
 }
 
@@ -126,46 +121,42 @@ void display_history(struct commit *from)
   */
 void infos(struct commit *from, int major, unsigned long minor)
 {
-  struct commit* ptr = from->major_parent;
-  struct commit* ptr2;
+  struct commit *commitMajor, *commitMinor;
+  struct list_head *pos;
 
-  /* Si version majeur est la bonne, on pointe sur le précedent pour qu'il soit
-     accedé par le foreach */
-  if(ptr->version.major == major) ptr = list_next_entry(ptr, major_list);
-
-  /* On se déplace jusqu'à la bonne version majeure */
-  list_for_each_entry(ptr, &(from->major_list), major_list) {
-    if(ptr->version.major == major)
-      break;
-  }
-
-  /* Si pas la version majeur recherchée dans la liste */
-  if(ptr->version.major != major) {
-    printf("%2d-%2lu : Not here !!!\n",major, minor);
+  if (from->version.major == major && from->version.minor == minor){
+    display_commit (from);
     return;
   }
+  
+  list_for_each(pos, &list_major){
+    commitMajor = container_of (pos, struct commit, major_list);
 
-  /* Si la version mineure est la bonne on a trouvé */
-  if(ptr->version.major != major) {
-    display_commit(ptr);
-    return;
-  }
-
-  ptr2 = ptr;
-
-  /* Parcours tous les elts sauf le premier */
-  list_for_each_entry(ptr, &(ptr2->lhead), lhead) {
-    if (ptr->version.major != major) {
-      /* On a dépassé les bonnes majeures, on sort de la boucle */
-      break;
-    } else if(ptr->version.major == major && ptr->version.minor == minor) {
-      /* On a trouvé la bonne version, on s'arrête */
-      display_commit(ptr);
+    /* Cas ou le commit recherche est celui la */
+    if (commitMajor->version.major == major && commitMajor->version.minor == minor){
+      display_commit (from);
       return;
+    }
+
+    /* Cas ou le numero majeur est bon, on recherche le mineur */
+    if (commitMajor->version.major == major){
+      list_for_each (pos, &commitMajor->lhead){
+	/* Si tete de liste */
+	if (pos == &list_complete)
+	  break;
+
+	commitMinor = container_of (pos, struct commit, lhead);
+
+	if (commitMinor->version.minor == minor){
+	  display_commit (commitMinor);
+	  return;
+	}
+      }
+      break;
     }
   }
   
-  printf("%2d-%2lu : Not here !!!\n",major, minor);
+  printf("%d-%lu : Not here !!!\n",major, minor);
 }
 
 /**
@@ -192,5 +183,5 @@ struct commit *commitOf(struct version *version)
  */
 void freeHistory(struct commit *from)
 {
-  free(from);
+  
 }
