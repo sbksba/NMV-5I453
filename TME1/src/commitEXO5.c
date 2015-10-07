@@ -25,6 +25,8 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
   c->version.minor = minor;
   c->version.flags = 0;
   c->comment = strdup(comment); /*PETITE FUITE*/
+  c->display = NULL;
+  c->extract = NULL;
   
   INIT_LIST_HEAD (&c->lhead);
   INIT_LIST_HEAD (&c->major_list);
@@ -42,18 +44,6 @@ static struct commit *insert_commit(struct commit *from, struct commit *new)
 {
 	/* TODO : Exercice 3 - Question 3 */
   list_add (&new->lhead, &from->lhead);
-
-  /* Si les majeurs correspondent, ils ont le meme parent, sinon
-   * le nouveau est son propre pere.
-   */
-  /*if (new->version.minor == 0){
-    list_add(&new->major_list, &(from->major_parent->major_list));
-    new->major_parent = new;
-  }
-  else{
-    new->major_parent = from->major_parent;
-    }*/
-
   return new;
 }
 
@@ -66,10 +56,12 @@ struct commit *add_minor_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major, from->version.minor + 1, comment);
+  c->display = display_commit_minor;
+  c->extract = extract_minor;
   c->major_parent = from->major_parent;
   list_add(&c->lhead, &from->lhead);
   
-  return c;/*insert_commit(from, c);*/
+  return c;
 }
 
 /**
@@ -81,6 +73,8 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major + 1, 0, comment);
+  c->display = display_commit_major;
+  c->extract = extract_major;
   list_add(&c->lhead, &from->lhead);
   list_add (&c->major_list, &from->major_parent->major_list);
     
@@ -94,8 +88,9 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 struct commit *del_commit(struct commit *victim)
 {
 	/* TODO : Exercice 3 - Question 5 */
-  list_del(&victim->lhead);
-  free(victim);
+  /*list_del(&victim->lhead);
+    free(victim);*/
+  (*victim->extract) (victim);
   return NULL;
 }
 
@@ -103,10 +98,21 @@ struct commit *del_commit(struct commit *victim)
   * display_commit - affiche un commit : "2:  0-2 (stable) 'Work 2'"
   * @c:             commit qui sera affiche
   */
-void display_commit(struct commit *c)
+/*void display_commit(struct commit *c)
 {
   printf("%2lu: %2u-%lu %s \t'%s'\n",c->id,c->version.major,c->version.minor,
 	 isUnstableBis(&c->version)? "(unstable)" : "(stable)", c->comment);
+	 }*/
+
+void display_commit_minor (struct commit *c)
+{
+  printf("%2lu: %2u-%lu %s \t'%s'\n",c->id,c->version.major,c->version.minor,
+	 isUnstableBis(&c->version)? "(unstable)" : "(stable)", c->comment);
+}
+
+void display_commit_major (struct commit *c)
+{
+  printf("### version %d : '%s' ###\n", c->version.major, c->comment);
 }
 
 /**
@@ -116,8 +122,12 @@ void display_commit(struct commit *c)
 void display_history(struct commit *from)
 {
   struct list_head* tmp;
-  list_for_each (tmp, &list_complete)
-    display_commit(container_of (tmp, struct commit, lhead));
+  struct commit *c;
+  
+  list_for_each (tmp, &list_complete){
+    c = container_of(tmp, struct commit, lhead);
+    (*c->display) (c);
+  }
   printf("\n");
 }
 
@@ -132,7 +142,7 @@ void infos(struct commit *from, int major, unsigned long minor)
   struct list_head *pos;
 
   if (from->version.major == major && from->version.minor == minor){
-    display_commit (from);
+    (*from->display) (from);
     return;
   }
   
@@ -141,7 +151,7 @@ void infos(struct commit *from, int major, unsigned long minor)
 
     /* Cas ou le commit recherche est celui la */
     if (commitMajor->version.major == major && commitMajor->version.minor == minor){
-      display_commit (from);
+      (*commitMajor->display) (commitMajor);
       return;
     }
 
@@ -158,7 +168,7 @@ void infos(struct commit *from, int major, unsigned long minor)
 	  break;
 	
 	if (commitMinor->version.minor == minor){
-	  display_commit (commitMinor);
+	  (*commitMinor->display) (commitMinor);
 	  return;
 	}
       }
@@ -201,4 +211,44 @@ void freeHistory()
     free(c->comment);
     free(c);
   }
+}
+
+/**
+ * extract_minor - libere la memoire occupe par le commit en parametre
+ * @c: commit qui sera supprime
+ */
+void extract_minor(struct commit *c)
+{
+  list_del(&c->lhead);
+  free(c->comment);
+  free(c);
+}
+
+/**
+ * extract_major - libere la memoire occupe par le commit en parametre
+ * @c: commit qui sera supprime
+ */
+void extract_major(struct commit *c)
+{
+  struct list_head *pos, *tmp;
+  struct commit *com;
+ 
+  list_for_each_safe(pos, tmp, &c->lhead){
+    com = container_of(pos, struct commit, lhead);
+    
+    if (&com->lhead == &list_complete)
+      break;
+
+    if (com->version.major != c->version.major)
+      break;
+
+    list_del(&com->lhead);
+    free(com->comment);
+    free(com);
+  }
+
+  list_del(&c->major_list);
+  list_del(&c->lhead);
+  free(c->comment);
+  free(c);
 }

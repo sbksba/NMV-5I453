@@ -11,10 +11,11 @@ int main(int argc, char const* argv[])
         struct commit *first = new_commit(0, 0, "First !");
 	struct commit *tmp, *victim, *last;
 
+	first->display = display_commit_major;
 	list_add (&first->lhead, &list_complete);
 	list_add (&first->major_list, &list_major);
 	
-	display_commit(first);
+	display_commit_major(first);
 	printf("\n");
 
 	display_history(first);
@@ -43,7 +44,7 @@ int main(int argc, char const* argv[])
 	infos(first, 1, 7);
 
 	infos(first, 4, 2);
-
+	
 	freeHistory();
 	
 	return 0;
