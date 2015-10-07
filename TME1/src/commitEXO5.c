@@ -24,7 +24,7 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
   c->version.major = major;
   c->version.minor = minor;
   c->version.flags = 0;
-  c->comment = strdup (comment);
+  c->comment = comment;
   
   INIT_LIST_HEAD (&c->lhead);
   INIT_LIST_HEAD (&c->major_list);
@@ -41,18 +41,18 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
 static struct commit *insert_commit(struct commit *from, struct commit *new)
 {
 	/* TODO : Exercice 3 - Question 3 */
-  list_add  (&new->lhead, &from->lhead);
+  list_add (&new->lhead, &from->lhead);
 
   /* Si les majeurs correspondent, ils ont le meme parent, sinon
    * le nouveau est son propre pere.
    */
-  if (new->version.minor == 0){
+  /*if (new->version.minor == 0){
     list_add(&new->major_list, &(from->major_parent->major_list));
     new->major_parent = new;
   }
   else{
     new->major_parent = from->major_parent;
-  }
+    }*/
 
   return new;
 }
@@ -66,7 +66,10 @@ struct commit *add_minor_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major, from->version.minor + 1, comment);
-  return insert_commit(from, c);
+  c->major_parent = from->major_parent;
+  list_add(&c->lhead, &from->lhead);
+  
+  return c;/*insert_commit(from, c);*/
 }
 
 /**
@@ -78,7 +81,10 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major + 1, 0, comment);
-  return insert_commit(from, c);
+  list_add(&c->lhead, &from->lhead);
+  list_add (&c->major_list, &from->major_parent->major_list);
+    
+  return c;
 }
 
 /**
@@ -89,6 +95,7 @@ struct commit *del_commit(struct commit *victim)
 {
 	/* TODO : Exercice 3 - Question 5 */
   list_del(&victim->lhead);
+  free(victim);
   return NULL;
 }
 
@@ -147,6 +154,9 @@ void infos(struct commit *from, int major, unsigned long minor)
 
 	commitMinor = container_of (pos, struct commit, lhead);
 
+	if (commitMinor->version.major != major)
+	  break;
+	
 	if (commitMinor->version.minor == minor){
 	  display_commit (commitMinor);
 	  return;
@@ -181,7 +191,14 @@ struct commit *commitOf(struct version *version)
  * @from: commit qui sera supprime
  *
  */
-void freeHistory(struct commit *from)
+void freeHistory()
 {
+  struct list_head *pos, *tmp;
+  struct commit *c;
   
+  list_for_each_safe(pos, tmp, &list_complete){
+    c = container_of(pos, struct commit, lhead);
+    /*free(c->comment);*/
+    free(c);
+  }
 }

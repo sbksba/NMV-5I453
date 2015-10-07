@@ -29,6 +29,6 @@ void display_history(struct commit *from);
 
 void infos(struct commit *from, int major, unsigned long minor);
 
-void freeHistory(struct commit *from);
+void freeHistory();
 
 #endif

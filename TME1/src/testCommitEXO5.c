@@ -44,12 +44,7 @@ int main(int argc, char const* argv[])
 
 	infos(first, 4, 2);
 
-	/*
-	free(first);
-	free(tmp);
-	free(victim);
-	free(last);
-	*/
+	freeHistory();
 	
 	return 0;
 }
