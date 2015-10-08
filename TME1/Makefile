@@ -8,7 +8,7 @@ OBJ=obj
 SRC=src
 
 ifeq ($(DEBUG),1)
-CFLAGS += -g
+CFLAGS += -DDEBUG -g
 endif
 
 all: directories TESTVERSION TEST TESTCOMMIT
