@@ -6,6 +6,11 @@
 
 struct commit;
 
+struct commit_ops{
+  void (*display) (struct commit*);
+  void (*extract) (struct commit*);
+};
+
 struct commit{
   unsigned long id;
   struct version version;
@@ -13,9 +18,11 @@ struct commit{
   struct list_head lhead;
   struct list_head major_list;
   struct commit *major_parent;
-
+  /*
   void (*display) (struct commit*);
   void (*extract) (struct commit*);
+  */
+  struct commit_ops *ops;
 };
 
 struct commit *new_commit(unsigned short major, unsigned long minor, char *comment);

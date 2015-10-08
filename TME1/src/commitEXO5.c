@@ -11,6 +11,16 @@ static int nextId = 0;
 LIST_HEAD(list_complete); /*RED LIST*/
 LIST_HEAD(list_major);    /*GREEN LIST*/
 
+static struct commit_ops ops_minor= {
+  .display = display_commit_minor,
+  .extract = extract_minor
+};
+
+static struct commit_ops ops_major= {
+  .display = display_commit_major,
+  .extract = extract_major
+};
+
 /**
   * new_commit - alloue et initialise une structure commit correspondant au parametre
   * @major:      numero de version majeure
@@ -24,9 +34,12 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
   c->version.major = major;
   c->version.minor = minor;
   c->version.flags = 0;
-  c->comment = strdup(comment); /*PETITE FUITE*/
+  c->comment = strdup(comment);
+  /*
   c->display = NULL;
   c->extract = NULL;
+  */
+  c->ops = &ops_major;
   
   INIT_LIST_HEAD (&c->lhead);
   INIT_LIST_HEAD (&c->major_list);
@@ -56,8 +69,7 @@ struct commit *add_minor_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major, from->version.minor + 1, comment);
-  c->display = display_commit_minor;
-  c->extract = extract_minor;
+  c->ops = &ops_minor;
   c->major_parent = from->major_parent;
   list_add(&c->lhead, &from->lhead);
   
@@ -73,8 +85,7 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 {
 	/* TODO : Exercice 3 - Question 3 */
   struct commit* c = new_commit (from->version.major + 1, 0, comment);
-  c->display = display_commit_major;
-  c->extract = extract_major;
+  c->ops = &ops_major;
   list_add(&c->lhead, &from->lhead);
   list_add (&c->major_list, &from->major_parent->major_list);
     
@@ -88,9 +99,7 @@ struct commit *add_major_commit(struct commit *from, char *comment)
 struct commit *del_commit(struct commit *victim)
 {
 	/* TODO : Exercice 3 - Question 5 */
-  /*list_del(&victim->lhead);
-    free(victim);*/
-  (*victim->extract) (victim);
+  (*victim->ops->extract) (victim);
   return NULL;
 }
 
@@ -126,7 +135,7 @@ void display_history(struct commit *from)
   
   list_for_each (tmp, &list_complete){
     c = container_of(tmp, struct commit, lhead);
-    (*c->display) (c);
+    (*c->ops->display) (c);
   }
   printf("\n");
 }
@@ -142,7 +151,7 @@ void infos(struct commit *from, int major, unsigned long minor)
   struct list_head *pos;
 
   if (from->version.major == major && from->version.minor == minor){
-    (*from->display) (from);
+    (*from->ops->display) (from);
     return;
   }
   
@@ -151,7 +160,7 @@ void infos(struct commit *from, int major, unsigned long minor)
 
     /* Cas ou le commit recherche est celui la */
     if (commitMajor->version.major == major && commitMajor->version.minor == minor){
-      (*commitMajor->display) (commitMajor);
+      (*commitMajor->ops->display) (commitMajor);
       return;
     }
 
@@ -168,7 +177,7 @@ void infos(struct commit *from, int major, unsigned long minor)
 	  break;
 	
 	if (commitMinor->version.minor == minor){
-	  (*commitMinor->display) (commitMinor);
+	  (*commitMinor->ops->display) (commitMinor);
 	  return;
 	}
       }
