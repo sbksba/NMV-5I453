@@ -2,9 +2,8 @@
 #include<stdio.h>
 #include<string.h>
 
-#include"commitEXO4.h"
+#include"commit.h"
 #include"version.h" 
-#include"list.h"
 
 static int nextId = 0;
 
@@ -16,13 +15,15 @@ static int nextId = 0;
   */
 struct commit *new_commit(unsigned short major, unsigned long minor, char *comment)
 {
+	/* TODO : Exercice 3 - Question 2 */
   struct commit *c = (struct commit*) malloc(sizeof(struct commit));
   c->id = nextId++;
   c->version.major = major;
   c->version.minor = minor;
   c->version.flags = 0;
   c->comment = strdup(comment);
-  INIT_LIST_HEAD(&c->lhead);
+  c->next = NULL;
+  c->prev = NULL;
   
   return c;
 }
@@ -35,7 +36,15 @@ struct commit *new_commit(unsigned short major, unsigned long minor, char *comme
 static struct commit *insert_commit(struct commit *from, struct commit *new)
 {
   
-  list_add(&new->lhead, &from->lhead);
+	/* TODO : Exercice 3 - Question 3 */
+  new->next = from->next;
+
+  if (from->next)
+    from->next->prev = new;
+  
+  from->next=new;
+  new->prev=from;
+  
   return new;
 }
 
@@ -46,6 +55,7 @@ static struct commit *insert_commit(struct commit *from, struct commit *new)
   */
 struct commit *add_minor_commit(struct commit *from, char *comment)
 {
+	/* TODO : Exercice 3 - Question 3 */
   struct commit *c=new_commit(from->version.major, from->version.minor+1, comment);
   insert_commit(from,c);
   
@@ -59,6 +69,7 @@ struct commit *add_minor_commit(struct commit *from, char *comment)
   */
 struct commit *add_major_commit(struct commit *from, char *comment)
 {
+	/* TODO : Exercice 3 - Question 3 */
   struct commit *c=new_commit(from->version.major+1, 0, comment);
   insert_commit(from,c);
   
@@ -71,8 +82,11 @@ struct commit *add_major_commit(struct commit *from, char *comment)
   */
 struct commit *del_commit(struct commit *victim)
 {
-  list_del(&victim->lhead);
-  return NULL;
+	/* TODO : Exercice 3 - Question 5 */
+  victim->prev->next = victim->next;
+  victim->next->prev = victim->prev;
+  
+  return victim;
 }
 
 /**
@@ -81,6 +95,7 @@ struct commit *del_commit(struct commit *victim)
   */
 void display_commit(struct commit *c)
 {
+	/* TODO : Exercice 3 - Question 4 */
   printf("%2lu: %2u-%lu %s \t'%s'\n",c->id,c->version.major,c->version.minor,
 	 isUnstableBis(&c->version)? "(unstable)" : "(stable)", c->comment);
 }
@@ -91,11 +106,9 @@ void display_commit(struct commit *c)
   */
 void display_history(struct commit *from)
 {
-  struct list_head* tmp;
-
-  display_commit(from);
-  list_for_each(tmp, &from->lhead)
-    display_commit(container_of(tmp,struct commit, lhead));
+	/* TODO : Exercice 3 - Question 4 */
+  for (; from != NULL; from = from->next)
+    display_commit(from);
   printf("\n");
 }
 
@@ -106,22 +119,13 @@ void display_history(struct commit *from)
   */
 void infos(struct commit *from, int major, unsigned long minor)
 {
-  struct commit* commit;
-  struct list_head* tmp;
-
-  if (from->version.major == major && from->version.minor == minor){
-    display_commit(from);
-    return;
-  }
-  
-  list_for_each(tmp, &from->lhead){
-    commit = container_of(tmp, struct commit, lhead);
-    if (commit->version.major == major && commit->version.minor == minor){
-      display_commit(commit);
+	/* TODO : Exercice 3 - Question 6 */
+  for (; from != NULL; from = from->next)
+    if (from->version.major == major && from->version.minor == minor){
+      display_commit (from);
       return;
     }
-  }
-  
+
   printf("%2d -%2lu : Not here !!!\n",major, minor);
 }
 

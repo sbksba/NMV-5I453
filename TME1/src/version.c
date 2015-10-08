@@ -5,12 +5,12 @@
 
 int is_unstable(struct version *v)
 {
-  	return 1 & ((char *)v)[sizeof(short)];
+	return 1 & ((char *)v)[sizeof(short)];
 }
 
 int isUnstableBis(struct version *v)
 {
-  	return 1 & v->minor;
+	return 1 & v->minor;
 }
 
 void display_version(struct version *v, int(*ptrfonction)(struct version *))

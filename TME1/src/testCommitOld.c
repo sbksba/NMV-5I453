@@ -1,7 +1,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 
-#include"commitEXO4.h"
+#include"commit.h"
 
 int main(int argc, char const* argv[])
 {

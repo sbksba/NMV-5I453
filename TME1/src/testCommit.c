@@ -3,12 +3,16 @@
 
 #include"commit.h"
 
-int main(int argc, char const* argv[])
+int main(int argc, char const *argv[])
 {
-        struct commit *first = new_commit(0, 0, "First !");
+	struct commit *first = new_commit(0, 0, "First !");
 	struct commit *tmp, *victim, *last;
-	
-	display_commit(first);
+
+	/*first->display = display_commit_major;*/
+	list_add(&first->lhead, &list_complete);
+	list_add(&first->major_list, &list_major);
+
+	display_commit_major(first);
 	printf("\n");
 
 	display_history(first);
@@ -18,14 +22,14 @@ int main(int argc, char const* argv[])
 	victim = add_minor_commit(tmp, "Work 3");
 	last = add_minor_commit(victim, "Work 4");
 	display_history(first);
- 
+
 	del_commit(victim);
 	display_history(first);
 
-	tmp = add_major_commit(last, "Realse 1");
+	tmp = add_major_commit(last, "Release 1");
 	tmp = add_minor_commit(tmp, "Work 1");
 	tmp = add_minor_commit(tmp, "Work 2");
-	tmp = add_major_commit(tmp, "Realse 2");
+	tmp = add_major_commit(tmp, "Release 2");
 	tmp = add_minor_commit(tmp, "Work 1");
 	display_history(first);
 
@@ -37,6 +41,14 @@ int main(int argc, char const* argv[])
 	infos(first, 1, 7);
 
 	infos(first, 4, 2);
+
+	#ifdef DEBUG
+	printf("\n== TEST SUPP MAJEUR ==\n");
+	del_commit(first);
+	display_history(NULL);
+	#endif
+
+	freeHistory();
 
 	return 0;
 }

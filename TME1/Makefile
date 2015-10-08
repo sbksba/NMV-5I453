@@ -31,10 +31,7 @@ ${OBJ}/version.o: ${SRC}/version.c
 ${OBJ}/commit.o: ${SRC}/commit.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
-${OBJ}/commitEXO4.o: ${SRC}/commitEXO4.c
-	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
-
-${OBJ}/commitEXO5.o: ${SRC}/commitEXO5.c
+${OBJ}/commitOld.o: ${SRC}/commitOld.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
 ${OBJ}/testVersion.o: ${SRC}/testVersion.c
@@ -43,10 +40,7 @@ ${OBJ}/testVersion.o: ${SRC}/testVersion.c
 ${OBJ}/testCommit.o: ${SRC}/testCommit.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
-${OBJ}/testCommitEXO4.o: ${SRC}/testCommitEXO4.c
-	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
-
-${OBJ}/testCommitEXO5.o: ${SRC}/testCommitEXO5.c
+${OBJ}/testCommitOld.o: ${SRC}/testCommitOld.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
 ${OBJ}/test.o: ${SRC}/test.c
@@ -55,7 +49,7 @@ ${OBJ}/test.o: ${SRC}/test.c
 # ============
 # BIBLIOTHEQUE
 # ============
-${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commitEXO5.o #${OBJ}/commit.o ${OBJ}/commitEXO4.o
+${LIB}/libcommit.a : ${OBJ}/version.o ${OBJ}/commit.o #${OBJ}/commitOld.o
 	ar -rs $@ $^
 
 # ==========
@@ -67,7 +61,7 @@ TESTVERSION: $(LIB)/libcommit.a ${OBJ}/testVersion.o
 TEST: ${OBJ}/test.o ${OBJ}/version.o
 	${CC} -o ${BIN}/$@ $^
 
-TESTCOMMIT: $(LIB)/libcommit.a ${OBJ}/testCommitEXO5.o
+TESTCOMMIT: $(LIB)/libcommit.a ${OBJ}/testCommit.o
 	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
 
 .PHONY: all proper clean cleanall

@@ -12,7 +12,7 @@ struct version {
 int is_unstable(struct version *v);
 
 int isUnstableBis(struct version *v);
-  
+
 void display_version(struct version *v, int(*ptrfonction)(struct version *));
 
 int cmp_version(struct version *v, int major, int minor);
