@@ -11,7 +11,7 @@ ifeq ($(DEBUG),1)
 CFLAGS += -DDEBUG -g
 endif
 
-all: directories TESTVERSION TEST TESTCOMMIT
+all: directories TESTVERSION TEST TESTCOMMIT TESTCOMMENT
 
 directories: ${OBJ} ${BIN} ${LIB}
 
@@ -31,6 +31,9 @@ ${OBJ}/version.o: ${SRC}/version.c
 ${OBJ}/commit.o: ${SRC}/commit.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
+${OBJ}/comment.o: ${SRC}/comment.c
+	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
+
 ${OBJ}/commitOld.o: ${SRC}/commitOld.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
@@ -38,6 +41,9 @@ ${OBJ}/testVersion.o: ${SRC}/testVersion.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
 ${OBJ}/testCommit.o: ${SRC}/testCommit.c
+	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
+
+${OBJ}/testComment.o: ${SRC}/testComment.c
 	${CC} -c -o $@ $< $(CFLAGS) -I${INC}
 
 ${OBJ}/testCommitOld.o: ${SRC}/testCommitOld.c
@@ -62,6 +68,9 @@ TEST: ${OBJ}/test.o ${OBJ}/version.o
 	${CC} -o ${BIN}/$@ $^
 
 TESTCOMMIT: $(LIB)/libcommit.a ${OBJ}/testCommit.o
+	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
+
+TESTCOMMENT: $(OBJ)/comment.o ${OBJ}/testComment.o
 	${CC} -o ${BIN}/$@ $^ ${LDFLAGS}
 
 .PHONY: all proper clean cleanall
