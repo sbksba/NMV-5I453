@@ -12,25 +12,39 @@ struct comment *new_comment(
 	struct comment *c = (struct comment *) malloc(sizeof(struct comment));
 
 	c->title_size = title_size;
-	if(! (c->title = malloc(title_size)))
-		return NULL;
+	if (!(c->title = malloc(title_size)))
+		goto badTitle;
 	memcpy(c->title, title, title_size);
 
 	c->author_size = author_size;
-	if(! (c->author = malloc(author_size)))
-		return NULL;
+	if (!(c->author = malloc(author_size)))
+		goto badAuthor;
 	memcpy(c->author, author, author_size);
 
 	c->text_size = text_size;
-	if(! (c->text = malloc(text_size)))
-		return NULL;
+	if (!(c->text = malloc(text_size)))
+		goto badText;
 	memcpy(c->text, text, text_size);
 
 	return c;
+
+badTitle:
+	free(c->title);
+	printf("## BAD TITLE ##\n");
+	return NULL;
+
+badAuthor:
+	free(c->author);
+	printf("## BAD AUTHOR SIZE ##\n");
+	return NULL;
+
+badText:
+	free(c->text);
+	printf("## BAD TEXT SIZE ##\n");
+	return NULL;
 }
 
 void display_comment(struct comment *c)
 {
 	printf("%s from %s \"%s\"\n", c->title, c->author, c->text);
 }
-
