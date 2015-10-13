@@ -28,19 +28,20 @@ struct comment *new_comment(
 
 	return c;
 
-badTitle:
-	free(c->title);
-	printf("## BAD TITLE ##\n");
+badText:
+	free(c->text);
+	printf("## BAD TEXT SIZE ##\n");
 	return NULL;
 
 badAuthor:
 	free(c->author);
 	printf("## BAD AUTHOR SIZE ##\n");
 	return NULL;
-
-badText:
-	free(c->text);
-	printf("## BAD TEXT SIZE ##\n");
+	
+badTitle:
+	free(c->title);
+	free(c);
+	printf("## BAD TITLE ##\n");
 	return NULL;
 }
 
