@@ -130,4 +130,71 @@ CF dynamic debug doc
 Exercice 5
 ----------
 
-2°) 
+2°) Nous observons une erreur de segmentation.
+    -> 
+    [New Thread 267]
+
+    Program received signal SIGSEGV, Segmentation fault.
+    [Switching to Thread 267]
+    0xffffffffa00001d3 in ?? ()
+
+3°)
+
+(gdb) backtrace
+#0  0xffffffffa00001d3 in ?? ()
+#1  0x00000000000001bb in irq_stack_union ()
+#2  0x0000000000000000 in ?? ()
+(gdb) monitor bt
+Stack traceback for pid 267
+0xffff88007cbb4800      267        2  1    0   R  0xffff88007cbb5100 *my_kcpustat_fn
+ ffff88007b95fe08 0000000000000018 ffffffffa00000ce 00000000000001bb
+ 0000000000000000 0000000000000000 0000000000000000 0000000000000000
+ 0000000000000000 0000000000000000 0000000000000064 0000000000000000
+Call Trace:
+ [<ffffffffa00000ce>] ? save_stats+0xce/0x120 [kcpustat]
+ [<ffffffffa0000332>] ? my_kcpustat_fn+0x72/0x90 [kcpustat]
+ [<ffffffffa00002c0>] ? print_stats+0x1a0/0x1a0 [kcpustat]
+ [<ffffffff811451ab>] ? kthread+0xdb/0x100
+ [<ffffffff811450d0>] ? kthread_create_on_node+0x180/0x180
+ [<ffffffff81aaa51f>] ? ret_from_fork+0x3f/0x70
+ [<ffffffff811450d0>] ? kthread_create_on_node+0x180/0x180
+
+--------------------------------------------------------------------------------------
+EXAMPLE
+
+(kgdb) add-symbol-file /sys/modules/linux/linux.ko 0xc0ae22d0
+add symbol table from file "/sys/modules/linux/linux.ko" at text_addr = 0xc0ae22d0?
+(y or n) y
+Reading symbols from /sys/modules/linux/linux.ko...done.
+(kgdb)
+--------------------------------------------------------------------------------------
+
+(gdb) backtrace
+#0  __list_add (next=<optimized out>, prev=<optimized out>, new=<optimized out>) at include/linux/list.h:45
+#1  list_add_tail (head=<optimized out>, new=<optimized out>) at include/linux/list.h:77
+#2  save_stats () at /users/nfs/Etu5/2900825/cours/NMV/TME4/EXO-05/kcpustat.c:42
+#3  0xffffffffa0000332 in list_del (entry=<optimized out>) at include/linux/list.h:108
+#4  print_stats () at /users/nfs/Etu5/2900825/cours/NMV/TME4/EXO-05/kcpustat.c:88
+#5  0xffffffff811451ab in kthread (_create=0xffffffffa00002c0 <print_stats+210>) at kernel/kthread.c:209
+#6  0xffffffff81aaa51f in ret_from_fork () at arch/x86/entry/entry_64.S:526
+#7  0x0000000000000000 in ?? ()
+
+Je pense que la ligne 88 pose probleme !!!
+Nous pouvons tester la nullite de la list.
+->
+if (!(&first->list == NULL))
+   	list_del(&first->list);
+
+5°)
+(gdb) backtrace
+#0  zone_watermarks () at include/linux/list.h:45
+#1  0xffffffffa0000332 in print_stats () at include/linux/list.h:90
+#2  0xffffffff811451ab in kthread (_create=0xffff88007b8cfeb8) at kernel/kthread.c:209
+#3  0xffffffff81aaa51f in ret_from_fork () at arch/x86/entry/entry_64.S:526
+#4  0x0000000000000000 in ?? ()
+
+Le probleme provient de la structure "struct my_kcpustat".
+
+6°)
+(Kernel Hacking) Debug linked list manipulation.
+
