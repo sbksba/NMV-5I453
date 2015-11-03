@@ -185,6 +185,9 @@ Nous pouvons tester la nullite de la list.
 if (!(&first->list == NULL))
    	list_del(&first->list);
 
+La ligne 76 pose probleme aussi, en effet nous faisons un list_del sur notre parcours donc il est
+possible que nous ne pouvons plus parcourirs notre liste il faudrait faire un for_each_entry_safe.
+
 5°)
 (gdb) backtrace
 #0  zone_watermarks () at include/linux/list.h:45
@@ -198,3 +201,9 @@ Le probleme provient de la structure "struct my_kcpustat".
 6°)
 (Kernel Hacking) Debug linked list manipulation.
 
+(gdb) backtrace
+#0  0xffffffffa00001ac in zone_watermarks () at /users/nfs/Etu5/2900825/cours/NMV/TME4/EXO-05/kcpustat.c:37
+#1  0xffffffffa00002c2 in print_stats () at /users/nfs/Etu5/2900825/cours/NMV/TME4/EXO-05/kcpustat.c:76
+#2  0xffffffff81144f7b in kthread (_create=0xffff88007b90beb8) at kernel/kthread.c:209
+#3  0xffffffff81aa29df in ret_from_fork () at arch/x86/entry/entry_64.S:526
+#4  0x0000000000000000 in ?? ()
