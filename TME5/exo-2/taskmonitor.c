@@ -12,12 +12,12 @@ MODULE_AUTHOR("Houssem Kanzari & benjamin bielle");
 MODULE_LICENSE("GPL");
 
 struct task_monitor {
-  struct pid* tmpid;
-  struct task_struct* task;
+	struct pid *tmpid;
+	struct task_struct *task;
 } *monitStat;
 
-static pid_t monit_pid = 0;
-static struct task_struct *monitThread = NULL;
+static pid_t monit_pid;
+static struct task_struct *monitThread;
 
 module_param_named(target, monit_pid, int, S_IRUGO);
 MODULE_PARM_DESC(monit_pid, "PID du processus à monitorer");
@@ -27,69 +27,72 @@ MODULE_PARM_DESC(monit_pid, "PID du processus à monitorer");
  * @param pid Pid de recherche
  * @return 0 en cas de succès
  */
-static struct task_monitor* monitor_pid(pid_t pid)
+static struct task_monitor *monitor_pid(pid_t pid)
 {
-  pr_info("[MONITOR_PID] start\n");
-  struct task_monitor *mp = kzalloc(sizeof(struct task_monitor), GFP_KERNEL);
-  if (!mp)
-    return NULL;
+	pr_info("[MONITOR_PID] start\n");
+	struct task_monitor *mp;
 
-  mp->tmpid = find_get_pid(pid);
-  if (!mp->tmpid) {
-    kfree(mp);
-    return NULL;
-  }
+	mp = kzalloc(sizeof(struct task_monitor), GFP_KERNEL);
+	if (!mp)
+		return NULL;
 
-  mp->task = get_pid_task(mp->tmpid, PIDTYPE_PID);
-  
-  return mp;
+	mp->tmpid = find_get_pid(pid);
+	if (!mp->tmpid) {
+		kfree(mp);
+		return NULL;
+	}
+
+	mp->task = get_pid_task(mp->tmpid, PIDTYPE_PID);
+
+	return mp;
 }
 
 int monitor_fn(void *unused)
 {
-  while(!kthread_should_stop()) {
-    if (pid_alive(monitStat->task))
-      pr_info("pid %d usr %d sys %d\n", monit_pid, monitStat->task->utime,
-              monitStat->task->stime);
-    else
-      pr_info("pid %d done\n", monit_pid);
+	while (!kthread_should_stop()) {
+		if (pid_alive(monitStat->task))
+			pr_info("pid %d usr %d sys %d\n", monit_pid,
+				(int)monitStat->task->utime,
+				(int)monitStat->task->stime);
+		else
+			pr_info("pid %d done\n", monit_pid);
 
-    set_current_state(TASK_UNINTERRUPTIBLE);
-    schedule_timeout(HZ);
-  }
+		set_current_state(TASK_UNINTERRUPTIBLE);
+		schedule_timeout(HZ);
+	}
 
-  return 0;
+	return 0;
 }
 
 static int __init monitorTask_init(void)
 {
-  pr_info("[INIT] taskmonitor\n");
-  monitStat = monitor_pid(monit_pid);
-  
-  if (!monitStat) {
-    pr_err("[ERROR] pid not found\n");
-    return -1;
-  }
+	pr_info("[INIT] taskmonitor\n");
+	monitStat = monitor_pid(monit_pid);
 
-  monitThread = kthread_run(monitor_fn, NULL, "monitor : ");
+	if (!monitStat) {
+		pr_err("[ERROR] pid not found\n");
+		return -1;
+	}
 
-  if (monitThread == ERR_PTR(-ENOMEM)) {
-    put_pid(monitStat->tmpid);
-    put_task_struct(monitStat->task);
-    kfree(monitStat);
-    return -1;
-  }
-  return 0;
+	monitThread = kthread_run(monitor_fn, NULL, "monitor : ");
+
+	if (monitThread == ERR_PTR(-ENOMEM)) {
+		put_pid(monitStat->tmpid);
+		put_task_struct(monitStat->task);
+		kfree(monitStat);
+		return -1;
+	}
+	return 0;
 }
 
 static void __exit monitorTask_exit(void)
 {
-  put_pid(monitStat->tmpid);
-  put_task_struct(monitStat->task);
-  kfree(monitStat);
-  if (monitThread)
-    kthread_stop(monitThread);
-  pr_info("[EXIT] taskmonitor\n");
+	put_pid(monitStat->tmpid);
+	put_task_struct(monitStat->task);
+	kfree(monitStat);
+	if (monitThread)
+		kthread_stop(monitThread);
+	pr_info("[EXIT] taskmonitor\n");
 }
 
 module_init(monitorTask_init);
