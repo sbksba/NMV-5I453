@@ -4,7 +4,7 @@
 #export LD_LIBRARY_PATH=/users/Etu5/2900825/cours/NMV/TME3/EXO-01
 #LD_PRELOAD=./libread.so ./cron_func
 
-LDFLAG= -L/users/Etu5/2900825/cours/NMV/TME3/EXO-01 -lfunc
+LDFLAG= -L . -lfunc
 LIB= libfunc.so libread.so
 
 CHECK_PATCH=../../../../biblio/eudyptula/torvalds/scripts/checkpatch.pl
