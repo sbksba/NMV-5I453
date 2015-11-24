@@ -1,9 +1,11 @@
 #! /bin/bash
 
+HOME=~login/cours/NMV
+
 # Fixer les variables avec les chemins de vos fichiers
-HDA=/tmp/nmv-tp.img 
-HDB=~/cours/NMV/Images/myHome.img 
-KERNEL=/tmp/linux-4.2.3/arch/x86/boot/bzImage 
+HDA=$HOME/Images/nmv-tp.img
+HDB=$HOME/Images/myHome.img
+KERNEL=/tmp/linux-4.2.3/arch/x86/boot/bzImage
 
 # Si besoin ajouter une option pour le kernel
 CMDLINE='root=/dev/sda1 rw vga=792 console=ttyS0 kgdbwait kgdboc=ttyS1'
