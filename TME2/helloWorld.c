@@ -18,4 +18,3 @@ static void hello_exit(void)
 	pr_info("Goodbye, cruel world\n");
 }
 module_exit(hello_exit);
-
