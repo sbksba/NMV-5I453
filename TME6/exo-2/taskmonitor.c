@@ -35,36 +35,58 @@ struct task_monitor {
 	struct mutex lock;
 };
 
-static struct task_monitor *tm;
-
 static ssize_t taskmonitor_show(struct kobject *kobj,
 				struct kobj_attribute *attr, char *buf);
 
 static ssize_t taskmonitor_store(struct kobject *kobj,
 				 struct kobj_attribute *attr,
 				 const char *buf, size_t count);
-static void skrinker_func(struct skrinker *shr, struct skrink_control *sc);
+
+static unsigned long scan_fun(struct skrinker *shr, struct skrink_control *sc);
+static unsigned long count_fun(struct skrinker *shr, struct skrink_control *sc);
 
 static struct kobj_attribute taskmonitor = __ATTR_RW(taskmonitor);
 static struct task_struct *kmonitorfn_thread;
+static struct task_monitor *tm;
 static struct shrinker sh = {
-	.count_objects = tm->nbsample,
-	.scan_objects = tm->skrinker_func,
+	.count_objects = count_fun,
+	.scan_objects = scan_fun,
 	.seeks = DEFAULT_SEEKS,
 	.batch = 0,
 	.flags = 0
 };
 
-static void skrinker_func(struct skrinker *shr, struct skrink_control *sc)
+static unsigned long count_fun(struct skrinker *shr, struct skrink_control *sc)
 {
-	struct task_sample *ms, *tmp_s;
-	int nbDel;
+	if (tm)
+		return tm->nbsample;
+	else
+		return -1;
+}
+
+static unsigned long scan_fun(struct skrinker *shr, struct skrink_control *sc)
+{
+	struct task_sample *myTs, *tmpTs;
+	unsigned long nbDeleted;
+
+	pr_warn("[SCAN_FUN]\nKernel wants %lu object(s) to free\n", sc->nr_to_scan);
 
 	mutex_lock(&tm->lock);
-	list_for_each_entry_safe(ms, tmp_s, &tm->listmonitor, listsample) {
-		kfree(ms);
-		
+	if (sc->nr_to_scan > 0) {
+		list_for_each_entry_safe(myTs, tmpTs, &tm->listmonitor, listsample) {
+			list_del(&myTs->listsample);
+			kfree(myTs);
+			nbDeleted++;
+			pr_warn("%lu object(s) free\n", nbDeleted);
+			if (nbDeleted >= sc->nr_to_scan)
+				break;
+		}
 	}
+	
+	tm->nbsample -= nbDeleted;
+	mutex_unlock(&tm->lock);
+	
+	return nbDeleted;
 }
 
 bool get_sample(struct task_monitor *tm, struct task_sample *sample)
@@ -101,15 +123,12 @@ int monitor_fn(void *unusued)
 		while (!kthread_should_stop()) {
 			if (pid_alive(ts)) {
 				save_sample();
-				pr_warn("pid %d usr %d sys %d\n",
-					pid_nr(tm->id), (int)ts->utime,
-					(int)ts->stime);
 			} else {
 				pr_warn("Monitored pid %d is dead\n",
 					pid_nr(tm->id));
 				break;
 			}
-			ssleep(1);
+			msleep(500);
 		}
 		put_task_struct(ts);
 	}
@@ -182,6 +201,7 @@ ssize_t taskmonitor_store(struct kobject *kobj, struct kobj_attribute *attr,
 
 static int taskmonitor_init(void)
 {
+	pr_warn("[TASKMONITOR_INIT]\n");
 	sysfs_create_file(kernel_kobj, &(taskmonitor.attr));
 	tm = monitor_pid(target);
 	if (tm == NULL) {
@@ -189,6 +209,7 @@ static int taskmonitor_init(void)
 		sysfs_remove_file(kernel_kobj, &(taskmonitor.attr));
 		return -1;
 	}
+	register_shrinker(&sh);
 	kmonitorfn_thread = kthread_run(monitor_fn, NULL, "monitor_fn");
 	pr_warn("taskmonitor module loaded\n");
 	return 0;
@@ -196,10 +217,19 @@ static int taskmonitor_init(void)
 
 static void taskmonitor_exit(void)
 {
+	pr_warn("[TASKMONITOR_EXIT]\n");
+	struct task_sample *ts, tmpTs;
+	
+	list_for_each_entry_safe(ts, tmpTs, &tm->listmonitor, listsample) {
+		list_del(&ts->listsample);
+		kfree(ts);
+	}
+	
 	if (kmonitorfn_thread)
 		kthread_stop(kmonitorfn_thread);
 	put_pid(tm->id);
 	kfree(tm);
+	unregister_shrinker(&sh);
 	sysfs_remove_file(kernel_kobj, &(taskmonitor.attr));
 	pr_warn("taskmonitor module unloaded\n");
 }
