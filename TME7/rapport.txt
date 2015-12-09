@@ -1,0 +1,30 @@
+EXO-1
+=====
+
+1°) xzcat ../tp7-linux-4.2.3.patch.xz | patch -p1 < ../tp7-linux-4.2.3.patch
+
+2°) on rajoute au fichier fs/dcache.c :
+    
+    unsigned int d_hash_shift __read_mostly;
+    EXPORT_SYMBOL(d_hash_shift);
+
+    on rajoute au fichier include/linux/dcache.h :
+    extern unsigned int d_hash_shift __read_mostly;
+    
+    diff -Nur linux-4.2.3-orig/fs/dcache.c linux-4.2.3/fs/dcache.c > tp7-ex1-ques2.patch
+    diff -Nur linux-4.2.3-orig/include/linux/dcache.h linux-4.2.3/include/linux/dcache.h >> tp7-ex1-ques2.patch
+
+OU
+   diff -Nur linux-4.2.3-orig/ linux-4.2.3/ > tp7-ex1-ques2.patch
+   -> ne marche pas tres bien, le patch est trop gros
+
+EXO-2
+=====
+
+1°) #define HASH_LEN_DECLARE u32 hash; u32 len;
+
+2°) CF weasel.c
+
+3°) CF weasel.c
+
+4°) 
