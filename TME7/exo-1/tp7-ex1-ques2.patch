@@ -1,0 +1,21 @@
+diff -Nur linux-4.2.3/fs/dcache.c ASS/linux-4.2.3/fs/dcache.c
+--- linux-4.2.3/fs/dcache.c	2015-12-15 18:05:44.258048409 +0100
++++ ASS/linux-4.2.3/fs/dcache.c	2015-12-15 18:04:47.479196494 +0100
+@@ -101,7 +101,6 @@
+ 
+ static unsigned int d_hash_mask __read_mostly;
+ static unsigned int d_hash_shift __read_mostly;
+-EXPORT_SYMBOL(d_hash_shift);
+ 
+ struct hlist_bl_head *dentry_hashtable __read_mostly;
+ EXPORT_SYMBOL(dentry_hashtable);
+diff -Nur linux-4.2.3/include/linux/dcache.h ASS/linux-4.2.3/include/linux/dcache.h
+--- linux-4.2.3/include/linux/dcache.h	2015-12-15 18:06:11.925491433 +0100
++++ ASS/linux-4.2.3/include/linux/dcache.h	2015-12-15 18:04:47.591194227 +0100
+@@ -589,6 +589,5 @@
+  */
+ 
+ extern struct hlist_bl_head *dentry_hashtable __read_mostly;
+-extern unsigned int d_hash_shift __read_mostly;
+ 
+ #endif	/* __LINUX_DCACHE_H */
