@@ -12,11 +12,11 @@ int main(int argc, char **argv)
   char buf[80];
   
   if (argc < 2)
-    mama = syscall(324, "world", buf, strlen("world"));
+    mama = syscall(325, "world", buf);
   else
-    mama = syscall(324, argv[1], buf, strlen(argv[1]));
+    mama = syscall(325, argv[1], buf);
   printf("[SYS_HELLO] call -> %ld\n", mama);
-  printf("[SYS_HELLO] %s\n", buf);
+  printf("[SYS_HELLO] %s", buf);
   
   return 0;
 }

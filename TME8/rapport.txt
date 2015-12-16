@@ -10,7 +10,7 @@ Exercice 1
     -> Ajout dans le fichier "linux-4.2.3/kernel/sys.c"
     SYSCALL_DEFINE0(hello)
     {
-	printk("Hello world YOLO\n");
+	printk("Hello World\n");
         return 0;
     }
 
@@ -49,7 +49,7 @@ Exercice 1
 		if (strlen(buf) > 80)
 		   return -EINVAL;
 
-		scnprintf(msg, "Hello %s !\n, arg");
+		scnprintf(msg, "Hello %s !\n, arg);
 		printk("[SYSCALL] %s", msg);
 		copy_to_user(buf, msg, strlen(msg)+1);
 		
