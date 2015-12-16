@@ -1,0 +1,75 @@
+TP8
+===
+
+Exercice 1
+----------
+
+1°) Elle a pour role de demander l'execution par le systeme d'une routine.
+2°) test user -> NRKill.c
+3°) test user -> hello.c
+    -> Ajout dans le fichier "linux-4.2.3/kernel/sys.c"
+    SYSCALL_DEFINE0(hello)
+    {
+	printk("Hello world YOLO\n");
+        return 0;
+    }
+
+    -> Ajout dans le fichier "linux-4.2.3/include/linux/syscalls.h"
+    asmlinkage long sys_hello(void);
+
+    -> Ajout dans le fichier "linux-4.2.3/arch/x86/entry/syscalls/syscall_64/tbl"
+    323     common  hello                   sys_hello 
+    
+4°) test user -> helloArg.c
+    On creer un repertoire TP8 dans le repertoire linux-4.2.3
+    -> creation d'un helloQ4.c
+       #include <linux/kernel.h>
+  
+       asmlinkage long sys_helloQ4(char *arg)
+       {
+		printk("Hello %s!\n", arg);
+      		return 0;
+       }
+
+    -> Ajout dans le fichier "linux-4.2.3/include/linux/syscalls.h"
+    asmlinkage long sys_helloQ4(char *arg);
+
+    -> Ajout dans le fichier "linux-4.2.3/arch/x86/entry/syscalls/syscall_64/tbl"
+    324     common  helloQ4                 sys_helloQ4 
+
+5°) test user -> helloRet.c
+    -> creation d'un helloQ5.c
+       #include <linux/kernel.h>
+       #include <asm/uaccess.h>
+       
+       asmlinkage long sys_helloQ5(char *arg, char __user *buf)
+       {
+		char msg[80];
+
+		if (strlen(buf) > 80)
+		   return -EINVAL;
+
+		scnprintf(msg, "Hello %s !\n, arg");
+		printk("[SYSCALL] %s", msg);
+		copy_to_user(buf, msg, strlen(msg)+1);
+		
+      		return strlen(msg)+1;
+       }
+
+    -> Ajout dans le fichier "linux-4.2.3/include/linux/syscalls.h"
+    asmlinkage long sys_helloQ5(char *arg, char __user *buf);
+
+    -> Ajout dans le fichier "linux-4.2.3/arch/x86/entry/syscalls/syscall_64/tbl"
+    325     common  helloQ5                 sys_helloQ5
+
+
+PS
+--
+
+Il faut ajouter dans le repertoire TP8 un fichier Makefile
+-> obj-y := helloQ4.o
+   obj-y += helloQ5.o
+
+Et dans le fichier Makefile a la racine il faut ajouter a la ligne
+core-y	   += kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+-> core-y	   += kernel/ mm/ fs/ ipc/ security/ crypto/ block/ TP8/
