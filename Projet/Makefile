@@ -9,6 +9,7 @@ SRC=src
 ifneq ($(KERNELRELEASE),)
 
   obj-m += ${SRC}/taskmonitor.o
+  obj-m += ${SRC}/testQueue.o
 
 else
 
