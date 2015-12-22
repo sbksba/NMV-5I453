@@ -26,20 +26,18 @@ static void my_wq_function( struct work_struct *work)
 
 static void my_test(my_work_t *mwt, int arg)
 {
-	int ret;
+	/* int ret; */
 
 	mwt = (my_work_t *)kmalloc(sizeof(my_work_t), GFP_KERNEL);
 	if (mwt) {
 		INIT_WORK( (struct work_struct *)mwt, my_wq_function );
 		mwt->x = arg;
-		ret = queue_work( my_wq, (struct work_struct *)mwt );
+		queue_work( my_wq, (struct work_struct *)mwt );
 	}
 }
 
 static int __init testQueue_init( void )
 {
-	int ret;
-
 	pr_info("[INIT] create workqueue\n");
 	my_wq = create_workqueue("my_queue");
 
@@ -53,7 +51,7 @@ static int __init testQueue_init( void )
 	my_test(work, 1);
 	/* Queue some additional work (item 2) */
 	pr_info("[INIT] my_test(work2)\n");
-	my_test(work2, 2);
+	my_test(work, 2);
 	
 	return 0;
 }
