@@ -1,0 +1,17 @@
+TODO
+====
+
+- keyserKill -> fonctionnalite permettant de tuer avec un certain signal un
+  	     	processus.
+
+- keyserLsmod -> fonctionnalite permettant d'afficher la liste des modules.
+
+- keyserMeminfo -> fonctionnalite permettant d'afficher les informations liees a
+  		   la memoire.
+
+-----------------------------------------
+
+KEYSERKILL
+==========
+
+Utilisation d'une workqueue et d'une waitqueue non bloquante (notification).

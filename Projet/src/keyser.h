@@ -5,11 +5,11 @@
 #define MAGIC 'N'
 
 typedef struct {
-	struct work_struct ws_keyser;
+	struct work_struct my_work;
 	int pid;
 	int sig;
-}wqs_data_t;
+}keyser_data_t;
 
-#define KEYSERKILL _IOR(MAGIC, 0, wqs_data_t *)
+#define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
 
 #endif

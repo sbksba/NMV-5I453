@@ -9,8 +9,9 @@ SRC=src
 ifneq ($(KERNELRELEASE),)
 
   #obj-m += ${SRC}/taskmonitor.o
-  obj-m += ${SRC}/testQueue.o
-  obj-m += ${SRC}/keyserQueue.o
+  #obj-m += ${SRC}/testQueue.o
+  #obj-m += ${SRC}/keyserQueue.o
+  obj-m += ${SRC}/wait_queue_driver.o
 
 else
 
