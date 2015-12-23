@@ -68,7 +68,8 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 		
 	case SOZE:
-		if (copy_to_user((char *)arg, EASTER, strlen(EASTER)) > 0) {
+		pr_info("[EASTER]\n");
+		if (copy_to_user((char *)arg, EASTER, strlen(EASTER)+1) > 0) {
 			pr_info("[SOZE] Error copy_to_user\n");
 			return -EFAULT;
 		}
