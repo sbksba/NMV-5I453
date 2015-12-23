@@ -4,8 +4,12 @@
 #define EASTER "The greatest trick the devil ever pulled was convincing the world he didn't exist"
 #define MAGIC 'N'
 
+/* IOCTL Declaration */
+static int Major;
+static const char *name = "KeyserSoze";
+
 typedef struct {
-	struct work_struct my_work;
+	/* struct work_struct my_work; */
 	int pid;
 	int sig;
 }keyser_data_t;
