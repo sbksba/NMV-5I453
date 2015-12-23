@@ -8,6 +8,8 @@
 #include <linux/uaccess.h>
 #include <linux/workqueue.h>
 #include <linux/wait.h>
+#include <linux/time.h>
+#include <linux/delay.h>
 
 #include "keyser.h"
 
@@ -19,8 +21,7 @@ static int keyserKill(struct work_struct *work);
 
 /* Initialize work queue */
 keyser_data_t kdt;
-/* static struct work_struct kwork; */
-/* static DECLARE_WORK(kwork, keyserKill); */
+static struct work_struct kwork;
 
 /* Initialize wait queue */
 /* static wait_queue_head_t kwq; */
@@ -58,14 +59,20 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 			return -EACCES;
 		}
 				
-		pr_info("[KDT] sig %d pid %d\n", kdt.sig, kdt.pid);
-		struct pid *p = find_get_pid(kdt.pid);
-		kill_pid(p, kdt.sig, 1);
-		/* schedule_work(&kwork); */
+		INIT_WORK(&kwork, keyserKill);
+		schedule_work(&kwork);
+		
+		/* init_waitqueue_head(&kwq); */
 		/* wait_event(kwq, kcond); */
 		pr_info("[NOTIFICATION] kill %d %d finish\n", kdt.sig, kdt.pid);
 		break;
-
+		
+	case SOZE:
+		if (copy_to_user((char *)arg, EASTER, strlen(EASTER)) > 0) {
+			pr_info("[SOZE] Error copy_to_user\n");
+			return -EFAULT;
+		}
+		break;
 	default:
 		return -ENOTTY;
 	}
@@ -85,8 +92,6 @@ static int __init keyser_init(void)
 	pr_info("%s The major device number is %d.\n",
 		"Registeration is a success", Major);
 	pr_info("mknod /dev/%s c %d 0\n", name, Major);
-
-	/* DECLARE_WAIT_QUEUE_HEAD(kwq); */
 	
 	return 0;
 }

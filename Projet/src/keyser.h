@@ -9,11 +9,11 @@ static int Major;
 static const char *name = "KeyserSoze";
 
 typedef struct {
-	/* struct work_struct my_work; */
 	int pid;
 	int sig;
 }keyser_data_t;
 
 #define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
+#define SOZE _IOR(MAGIC, 1, void *)
 
 #endif
