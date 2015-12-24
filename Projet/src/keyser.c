@@ -49,6 +49,10 @@ err:
 		return 1;
 }
 
+static void keyserLsmod(struct work_struct *work)
+{
+}
+
 long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
@@ -67,6 +71,10 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		pr_info("[NOTIFICATION] kill %d %d finish\n", kdt.sig, kdt.pid);
 		break;
 		
+	case KEYSERLSMOD:
+		pr_info("[KEYSERLSMOD]\n");
+		break;
+
 	case SOZE:
 		pr_info("[EASTER]\n");
 		if (copy_to_user((char *)arg, EASTER, strlen(EASTER)+1) > 0) {

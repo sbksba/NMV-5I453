@@ -14,6 +14,7 @@ typedef struct {
 }keyser_data_t;
 
 #define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
-#define SOZE _IOR(MAGIC, 1, void *)
+#define KEYSERLSMOD _IOR(MAGIC, 1, void *)
+#define SOZE _IOR(MAGIC, 2, void *)
 
 #endif
