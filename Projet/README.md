@@ -7,7 +7,7 @@ Objectifs
 L'objectif de ce projet est de réaliser un outil en ligne de commmande capable d'intéragir avec le noyau pour obtenir certaines informations ou d'exécuter certaines actions.
 
 Cet outil peut être sous la forme d'un terminal intéractif (comme gdb) ou uniquement en ligne de commandes avec des sous-commandes (comme git).
-Si cet outil est sous forme d'un terminal intéractif 
+
 
 ## Licence
 
