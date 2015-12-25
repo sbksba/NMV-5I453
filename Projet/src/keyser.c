@@ -10,12 +10,12 @@
 #include <linux/wait.h>
 #include <linux/time.h>
 #include <linux/delay.h>
+#include <linux/kobject.h>
 
 #include "keyser.h"
 
 MODULE_DESCRIPTION("Module ");
 MODULE_AUTHOR("Houssem Kanzari & benjamin bielle");
-MODULE_LICENSE("GPL");
 
 static int keyserKill(struct work_struct *work);
 
@@ -29,8 +29,6 @@ static struct work_struct kwork;
 
 /**
  * Kill a proc
- * @param pid Target Pid
- * @param sig Signal wanted
  * @return 0 if it's work 1 if it doesn't
  */
 static int keyserKill(struct work_struct *work)
@@ -49,8 +47,15 @@ err:
 		return 1;
 }
 
-static void keyserLsmod(struct work_struct *work)
+/**
+ * Print the module list
+ */
+static int keyserLsmod(struct work_struct *work)
 {
+	pr_info("Module\tSize\tUsed by\n");
+	pr_info("%s\n", &__this_module.name);
+	
+	return 0;
 }
 
 long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
@@ -73,6 +78,10 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		
 	case KEYSERLSMOD:
 		pr_info("[KEYSERLSMOD]\n");
+		
+		INIT_WORK(&kwork, keyserLsmod);
+		schedule_work(&kwork);
+
 		break;
 
 	case SOZE:

@@ -32,12 +32,13 @@ int main(int argc, char **argv)
 	printf("[USER] sig %d pid %d\n", kd.sig, kd.pid);
 	ioctl(file, KEYSERKILL, &kd);
 
+	sleep(1);
 	printf("[USER] lsmod\n");
 	ioctl(file, KEYSERLSMOD, NULL);
 
-	printf("[EASTER]\n");
-	ioctl(file, SOZE, &soze);
-	printf("%s\n", soze);
+	/* printf("[EASTER]\n"); */
+	/* ioctl(file, SOZE, &soze); */
+	/* printf("%s\n", soze); */
 	
 	return EXIT_SUCCESS;
 }
