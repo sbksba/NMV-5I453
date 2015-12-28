@@ -16,6 +16,7 @@
 
 MODULE_DESCRIPTION("Module ");
 MODULE_AUTHOR("Houssem Kanzari & benjamin bielle");
+MODULE_LICENSE("GPL");
 
 static int keyserKill(struct work_struct *work);
 
@@ -33,7 +34,9 @@ static struct work_struct kwork;
  */
 static int keyserKill(struct work_struct *work)
 {
-       	struct pid *p = find_get_pid(kdt.pid);
+       	struct pid *p;
+
+	p = find_get_pid(kdt.pid);
 
 	if (!p)
 		goto err;
@@ -52,9 +55,14 @@ err:
  */
 static int keyserLsmod(struct work_struct *work)
 {
+	struct module *mod;
+
 	pr_info("Module\tSize\tUsed by\n");
-	pr_info("%s\n", &__this_module.name);
 	
+	list_for_each_entry(mod, *(&THIS_MODULE->list.prev), list) {
+		pr_info("%s\t%u\t%u\n", mod->name, mod->core_size, mod->init_size);
+	}
+
 	return 0;
 }
 
