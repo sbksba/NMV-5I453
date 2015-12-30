@@ -56,12 +56,20 @@ err:
 static int keyserLsmod(struct work_struct *work)
 {
 	struct module *mod;
+	struct module_use *umod;
 
-	pr_info("Module\tSize\tUsed by\n");
+	pr_info("Module                  Size  modstruct     Used by\n");
 	
 	list_for_each_entry(mod, *(&THIS_MODULE->list.prev), list) {
-		pr_info("%s\t%u\t%u\n", mod->name, mod->core_size, mod->init_size);
+		if (mod->state == MODULE_STATE_UNFORMED)
+			continue;
+		pr_info("%-20s%8u%8u ", mod->name, mod->core_size, mod->init_size);
+
+		list_for_each_entry(umod, &mod->source_list, source_list) {
+			pr_info("%s", umod->target->name);
+		}
 	}
+	pr_info("\n");
 
 	return 0;
 }
