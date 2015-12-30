@@ -30,13 +30,13 @@ ${BIN}:
 # OBJET
 # =====
 ${OBJ}/test.o: ${SRC}/test.c
-	${CC} -c -o $@ $< $(CFLAGS) #-I${INC}
+	${CC} -c -o $@ $< $(CFLAGS)
 
 # ==========
 # EXECUTABLE
 # ==========
 TEST: ${OBJ}/test.o 
-	${CC} -o ${BIN}/$@ $^ #${LDFLAGS}
+	${CC} -o ${BIN}/$@ $^
 
 
 proper:
