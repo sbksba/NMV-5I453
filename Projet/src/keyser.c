@@ -11,6 +11,7 @@
 #include <linux/time.h>
 #include <linux/delay.h>
 #include <linux/kobject.h>
+#include <linux/mm.h>
 
 #include "keyser.h"
 
@@ -18,7 +19,8 @@ MODULE_DESCRIPTION("Module ");
 MODULE_AUTHOR("Houssem Kanzari & benjamin bielle");
 MODULE_LICENSE("GPL");
 
-static int keyserKill(struct work_struct *work);
+/* Meminfo variable */
+struct sysinfo *val;
 
 /* Initialize work queue */
 keyser_data_t kdt;
@@ -32,7 +34,7 @@ static struct work_struct kwork;
  * Kill a proc
  * @return 0 if it's work 1 if it doesn't
  */
-static int keyserKill(struct work_struct *work)
+static void keyserKill(struct work_struct *work)
 {
        	struct pid *p;
 
@@ -44,16 +46,16 @@ static int keyserKill(struct work_struct *work)
 	kill_pid(p, kdt.sig, 1);
 	/* wake_up(&kwq); */
 	
-	return 0;
+	return;
 err:
 		pr_info("[KeyserKill] pid not found\n");
-		return 1;
+		return;
 }
 
 /**
- * Print the module list
+ * Print the module list (lsmod)
  */
-static int keyserLsmod(struct work_struct *work)
+static void keyserLsmod(struct work_struct *work)
 {
 	struct module *mod;
 	struct module_use *umod;
@@ -70,8 +72,24 @@ static int keyserLsmod(struct work_struct *work)
 		}
 	}
 	pr_info("\n");
+}
 
-	return 0;
+/**
+ * Print the information about the memory state
+ */
+static void keyserMeminfo(struct work_struct *work)
+{
+	struct timespec uptime;
+
+	ktime_get_ts(&uptime);
+	memset(val, 0, sizeof(*val));
+	
+	val->uptime   = uptime.tv_sec;
+	val->loads[0] = avenrun[0];
+	val->loads[1] = avenrun[1];
+	val->loads[2] = avenrun[2];
+	val->procs    = nr_threads-1;
+	si_meminfo(val);
 }
 
 long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
@@ -98,6 +116,14 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		INIT_WORK(&kwork, keyserLsmod);
 		schedule_work(&kwork);
 
+		break;
+
+	case KEYSERMEMINFO:
+		pr_info("ERMEMINFO]\n");
+		
+		INIT_WORK(&kwork, keyserMeminfo);
+		schedule_work(&kwork);
+		
 		break;
 
 	case SOZE:

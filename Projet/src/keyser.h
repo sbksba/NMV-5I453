@@ -13,8 +13,27 @@ typedef struct {
 	int sig;
 }keyser_data_t;
 
+typedef struct {
+	unsigned long totalram;
+	unsigned long freeram;
+	unsigned long available;
+	unsigned long bufferram;
+	unsigned long cached;
+	unsigned long total_swapcache_pages;
+	unsigned long active;
+	unsigned long inactive;
+	unsigned long active_anon;
+	unsigned long inactive_anon;
+	unsigned long active_file;
+	unsigned long inactive_file;
+	unsigned long unevictable;
+	unsigned long mlocked;
+	/* ADD more struff */
+}keyser_meminfo_t;
+
 #define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
 #define KEYSERLSMOD _IOR(MAGIC, 1, void *)
-#define SOZE _IOR(MAGIC, 2, void *)
+#define KEYSERMEMINFO _IOR(MAGIC, 2, void *)
+#define SOZE _IOR(MAGIC, 3, void *)
 
 #endif
