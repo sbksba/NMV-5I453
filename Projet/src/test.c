@@ -42,8 +42,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	case 'k':
 		kd.sig = atoi(state->argv[state->next]);
 		kd.pid = atoi(state->argv[(state->next)+1]);
-		printf("TEST : SIG %d -- PID  %d\n", kd.sig, kd.pid);
-		/* ioctl(file, KEYSERKILL, &kd); */
+		ioctl(file, KEYSERKILL, &kd);
 		break;
 	case 'l':
 		printf("[LSMOD] not working correctly\n");
@@ -63,7 +62,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		break;
 	case ARGP_KEY_END:
 		if (state->arg_num < 2)
-			argp_usage (state);
+			argp_usage(state);
 		break;
 	default:
 		return ARGP_ERR_UNKNOWN;
