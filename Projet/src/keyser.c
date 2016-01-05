@@ -199,7 +199,7 @@ static void __exit keyser_exit(void)
 	kfree(killWorker);
 	kfree(lsmodWorker);
 	kfree(meminfoWorker);
-
+	
 	unregister_chrdev(Major, name);
 	pr_info("[KEYSER] EXIT\n");
 }
