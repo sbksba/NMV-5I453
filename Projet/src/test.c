@@ -3,6 +3,7 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/sysinfo.h>
 #include <fcntl.h>
 #include <string.h>
 
@@ -13,32 +14,24 @@ int main(int argc, char **argv)
 	int file = open("/dev/KeyserSoze", O_RDONLY);
 	char soze[81];
 	keyser_data_t kd;
+	struct sysinfo mysysinfo;
 
-	/* while (1) { */
-	/* 	printf("ASK what you want (kill|quit) : "); */
-	/* 	scanf("%s", query); */
+       	/* kd.pid = atoi(argv[2]); */
+       	/* kd.sig = atoi(argv[1]); */
+	/* printf("[USER] sig %d pid %d\n", kd.sig, kd.pid); */
+	/* ioctl(file, KEYSERKILL, &kd); */
 
-	/* 	if (strncmp(query, "kill", 4) == 0) { */
-	/* 		kd.pid = atoi(argv[2]); */
-	/* 		kd.sig = atoi(argv[1]); */
-	/* 		ioctl(file, KEYSERKILL, kd); */
-	/* 	} else if (strncmp(query, "quit", 4) == 0) { */
-	/* 		break; */
-	/* 	} */
-	/* } */
-	
-	kd.pid = atoi(argv[2]);
-       	kd.sig = atoi(argv[1]);
-	printf("[USER] sig %d pid %d\n", kd.sig, kd.pid);
-	ioctl(file, KEYSERKILL, &kd);
+	/* ERROR TO CORRECT */
+	/* printf("[USER] lsmod\n"); */
+	/* ioctl(file, KEYSERLSMOD, NULL); */
 
-	sleep(1);
-	printf("[USER] lsmod\n");
-	ioctl(file, KEYSERLSMOD, NULL);
+	/* printf("[USER] meminfo\n"); */
+	/* ioctl(file, KEYSERMEMINFO, &mysysinfo); */
+	/* printf("MemTotal : %8lu\n", mysysinfo.totalram); */
 
-	printf("[EASTER]\n");
-	ioctl(file, SOZE, &soze);
-	printf("%s\n", soze);
-	
+	/* printf("[EASTER]\n"); */
+	/* ioctl(file, SOZE, &soze); */
+	/* printf("%s\n", soze); */
+
 	return EXIT_SUCCESS;
 }

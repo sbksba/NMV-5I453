@@ -19,49 +19,68 @@ MODULE_DESCRIPTION("Module ");
 MODULE_AUTHOR("Houssem Kanzari & benjamin bielle");
 MODULE_LICENSE("GPL");
 
-/* Meminfo variable */
-struct sysinfo *val;
-
-/* Initialize work queue */
-keyser_data_t kdt;
-static struct work_struct kwork;
-
 /* Initialize wait queue */
-/* static wait_queue_head_t kwq; */
-/* static bool kcond; */
+DECLARE_WAIT_QUEUE_HEAD(wait_queue);
+static int kcond, lsmodcond, memcond;
+
+/* Struct for the features */
+struct killWork {
+	keyser_data_t *kdt;
+	struct work_struct work;
+};
+
+struct lsmodWork {
+	struct work_struct work;
+};
+
+struct meminfoWork {
+	struct sysinfo *meminfo;
+	struct work_struct work;
+};
+
+struct killWork *killWorker;
+struct lsmodWork *lsmodWorker;
+struct meminfoWork *meminfoWorker;
 
 /**
  * Kill a proc
- * @return 0 if it's work 1 if it doesn't
+ * @work : just a work_queue
  */
 static void keyserKill(struct work_struct *work)
 {
+	struct killWork *kw;
        	struct pid *p;
 
-	p = find_get_pid(kdt.pid);
+	kw = container_of(work, struct killWork, work);
+	p = find_get_pid(kw->kdt->pid);
 
-	if (!p)
+	if (!p) {
+		pr_info("[keyserKill] pid not found\n");
 		goto err;
-	
-	kill_pid(p, kdt.sig, 1);
-	/* wake_up(&kwq); */
-	
-	return;
+	}
+
+	kill_pid(p, kw->kdt->sig, 1);
+	put_pid(p);
+
 err:
-		pr_info("[KeyserKill] pid not found\n");
-		return;
+	if (!kcond) {
+		kcond = 1;
+		wake_up(&wait_queue);
+	}
 }
 
 /**
  * Print the module list (lsmod)
+ * @work : just a work_queue
  */
 static void keyserLsmod(struct work_struct *work)
 {
+
 	struct module *mod;
 	struct module_use *umod;
 
 	pr_info("Module                  Size  modstruct     Used by\n");
-	
+
 	list_for_each_entry(mod, *(&THIS_MODULE->list.prev), list) {
 		if (mod->state == MODULE_STATE_UNFORMED)
 			continue;
@@ -72,24 +91,24 @@ static void keyserLsmod(struct work_struct *work)
 		}
 	}
 	pr_info("\n");
+	/* wake_up(&wait_queue); */
 }
 
 /**
  * Print the information about the memory state
+ * @work : just a work_queue
  */
 static void keyserMeminfo(struct work_struct *work)
 {
-	struct timespec uptime;
+	struct meminfoWork *mw;
 
-	ktime_get_ts(&uptime);
-	memset(val, 0, sizeof(*val));
-	
-	val->uptime   = uptime.tv_sec;
-	val->loads[0] = avenrun[0];
-	val->loads[1] = avenrun[1];
-	val->loads[2] = avenrun[2];
-	val->procs    = nr_threads-1;
-	si_meminfo(val);
+	mw = container_of(work, struct meminfoWork, work);
+	si_meminfo(mw->meminfo);
+
+	if (!memcond) {
+		memcond = 1;
+		wake_up(&wait_queue);
+	}
 }
 
 long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
@@ -97,33 +116,41 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 	switch (cmd) {
 	case KEYSERKILL:
 		pr_info("[KEYSERKILL]\n");
-		if (copy_from_user(&kdt, (keyser_data_t *)arg, sizeof(keyser_data_t))) {
+		kcond = 0;
+		killWorker->kdt = kmalloc(sizeof(keyser_data_t), GFP_KERNEL);
+
+		if (copy_from_user(killWorker->kdt, (keyser_data_t *)arg, sizeof(keyser_data_t))) {
 			pr_info("[KEYSERKILL] Error copy_from_user\n");
 			return -EACCES;
 		}
-				
-		INIT_WORK(&kwork, keyserKill);
-		schedule_work(&kwork);
-		
-		/* init_waitqueue_head(&kwq); */
-		/* wait_event(kwq, kcond); */
-		pr_info("[NOTIFICATION] kill %d %d finish\n", kdt.sig, kdt.pid);
+
+		schedule_work(&killWorker->work);
+		wait_event(wait_queue, kcond);
+		kfree(killWorker->kdt);
+
 		break;
-		
+
 	case KEYSERLSMOD:
 		pr_info("[KEYSERLSMOD]\n");
-		
-		INIT_WORK(&kwork, keyserLsmod);
-		schedule_work(&kwork);
+		schedule_work(&lsmodWorker->work);
+		/* wait_event(wait_queue, lsmodcond); */
 
 		break;
 
 	case KEYSERMEMINFO:
-		pr_info("ERMEMINFO]\n");
-		
-		INIT_WORK(&kwork, keyserMeminfo);
-		schedule_work(&kwork);
-		
+		pr_info("[KEYSERMEMINFO]\n");
+		memcond = 0;
+		meminfoWorker->meminfo = kmalloc(sizeof(struct sysinfo), GFP_KERNEL);
+		schedule_work(&meminfoWorker->work);
+		wait_event(wait_queue, memcond);
+
+		if (copy_to_user((char *)arg, meminfoWorker->meminfo, sizeof(struct sysinfo)) > 0) {
+			pr_info("[KEYSERMEMINFO] Error copy_to_user\n");
+			return -EFAULT;
+		}
+
+		kfree(meminfoWorker->meminfo);
+
 		break;
 
 	case SOZE:
@@ -132,6 +159,7 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 			pr_info("[SOZE] Error copy_to_user\n");
 			return -EFAULT;
 		}
+
 		break;
 	default:
 		return -ENOTTY;
@@ -152,12 +180,26 @@ static int __init keyser_init(void)
 	pr_info("%s The major device number is %d.\n",
 		"Registeration is a success", Major);
 	pr_info("mknod /dev/%s c %d 0\n", name, Major);
-	
+
+	killWorker    = kmalloc(sizeof(struct killWork), GFP_KERNEL);
+	lsmodWorker   = kmalloc(sizeof(struct lsmodWork), GFP_KERNEL);
+	meminfoWorker = kmalloc(sizeof(struct meminfoWork), GFP_KERNEL);
+
+	/* Initialize the workqueue */
+	INIT_WORK(&killWorker->work, keyserKill);
+	INIT_WORK(&lsmodWorker->work, keyserLsmod);
+	INIT_WORK(&meminfoWorker->work, keyserMeminfo);
+
 	return 0;
 }
 
 static void __exit keyser_exit(void)
 {
+	/* Free the workqueue */
+	kfree(killWorker);
+	kfree(lsmodWorker);
+	kfree(meminfoWorker);
+
 	unregister_chrdev(Major, name);
 	pr_info("[KEYSER] EXIT\n");
 }
