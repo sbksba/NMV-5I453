@@ -45,7 +45,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		ioctl(file, KEYSERKILL, &kd);
 		break;
 	case 'l':
-		printf("[LSMOD] not working correctly\n");
+		/* printf("[LSMOD] not working correctly\n"); */
+		ioctl(file, KEYSERLSMOD, NULL);
 		break;
 	case 'm':
 		ioctl(file, KEYSERMEMINFO, &mysysinfo);
