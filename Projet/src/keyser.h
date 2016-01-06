@@ -11,7 +11,7 @@ static const char *name = "KeyserSoze";
 typedef struct {
 	int pid;
 	int sig;
-}keyser_data_t;
+} keyser_data_t;
 
 #define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
 #define KEYSERLSMOD _IOR(MAGIC, 1, void *)

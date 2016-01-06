@@ -49,7 +49,7 @@ struct meminfoWork *meminfoWorker;
 static void keyserKill(struct work_struct *work)
 {
 	struct killWork *kw;
-       	struct pid *p;
+	struct pid *p;
 
 	kw = container_of(work, struct killWork, work);
 	p = find_get_pid(kw->kdt->pid);
@@ -89,12 +89,12 @@ static void keyserLsmod(struct work_struct *work)
 	/* pr_info("Module                Size   Used by\n"); */
 
 	list_for_each_entry(mod, &modules, list) {
-		/* if (mod->state == MODULE_STATE_UNFORMED) */
-		/* 	continue; */
-		pr_info("%-10s%20u%4u ", mod->name, mod->core_size, mod->init_size);
+		pr_info("%-10s%20u%4u ", mod->name, mod->core_size,
+			mod->init_size);
 
 		if (mod->init_size > 0)
-			list_for_each_entry(umod, &mod->source_list, source_list) {
+			list_for_each_entry(umod, &mod->source_list,
+					    source_list) {
 				pr_info("%s", umod->target->name);
 			}
 		pr_info("\n");
@@ -127,7 +127,8 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		kcond = 0;
 		killWorker->kdt = kmalloc(sizeof(keyser_data_t), GFP_KERNEL);
 
-		if (copy_from_user(killWorker->kdt, (keyser_data_t *)arg, sizeof(keyser_data_t))) {
+		if (copy_from_user(killWorker->kdt, (keyser_data_t *)arg,
+				   sizeof(keyser_data_t))) {
 			pr_info("[KEYSERKILL] Error copy_from_user\n");
 			return -EACCES;
 		}
@@ -148,11 +149,13 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 	case KEYSERMEMINFO:
 		pr_info("[KEYSERMEMINFO]\n");
 		memcond = 0;
-		meminfoWorker->meminfo = kmalloc(sizeof(struct sysinfo), GFP_KERNEL);
+		meminfoWorker->meminfo = kmalloc(sizeof(struct sysinfo),
+						 GFP_KERNEL);
 		schedule_work(&meminfoWorker->work);
 		wait_event(wait_queue, memcond);
 
-		if (copy_to_user((char *)arg, meminfoWorker->meminfo, sizeof(struct sysinfo)) > 0) {
+		if (copy_to_user((char *)arg, meminfoWorker->meminfo,
+				 sizeof(struct sysinfo)) > 0) {
 			pr_info("[KEYSERMEMINFO] Error copy_to_user\n");
 			return -EFAULT;
 		}
@@ -207,7 +210,7 @@ static void __exit keyser_exit(void)
 	kfree(killWorker);
 	kfree(lsmodWorker);
 	kfree(meminfoWorker);
-	
+
 	unregister_chrdev(Major, name);
 	pr_info("[KEYSER] EXIT\n");
 }
