@@ -8,7 +8,7 @@ L'objectif de ce projet est de réaliser un outil en ligne de commmande capable 
 
 > Cet outil peut être sous la forme d'un terminal intéractif (comme gdb)
 > ou uniquement en ligne de commandes avec des sous-commandes (comme git).     
-> Ici l'outil est de la forme que git.
+> Ici l'outil est de la même forme que git.
 
 Les fonctionnalités du programme sont les suivantes :
 
