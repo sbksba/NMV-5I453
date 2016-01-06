@@ -30,6 +30,7 @@ struct killWork {
 };
 
 struct lsmodWork {
+	char *buffer;
 	struct work_struct work;
 };
 
@@ -75,30 +76,37 @@ err:
  */
 static void keyserLsmod(struct work_struct *work)
 {
-
+	struct lsmodWork *lw;
 	struct module *mod;
 	struct module_use *umod;
+	char *tmp;
+	char sourceName[BUFFER_SIZE];
+	int memFree, cAppend;
 
-	/* Don't look or your eyes were bleeding */
-	char *m = "Module";
-	char *s = "Size";
-	char *u = "Used by";
-
-	pr_info("%-10s%20s %4s", m, s, u);
-	/* ===================================== */
-	/* pr_info("Module                Size   Used by\n"); */
-
+	memFree = BUFFER_SIZE;
+	cAppend = 0;
+	lw = container_of(work, struct lsmodWork, work);
+	tmp = kmalloc(512, GFP_KERNEL);
+	
 	list_for_each_entry(mod, &modules, list) {
-		pr_info("%-10s%20u%4u ", mod->name, mod->core_size,
-			mod->init_size);
+		memFree -= scnprintf(tmp, STRING_SIZE,
+				     "%-10s%20u%4u",
+				     mod->name,
+				     mod->core_size,
+				     mod->init_size );
 
 		if (mod->init_size > 0)
 			list_for_each_entry(umod, &mod->source_list,
 					    source_list) {
-				pr_info("%s", umod->target->name);
+				memset(&sourceName[0], 0, BUFFER_SIZE);
+				cAppend = scnprintf(sourceName, BUFFER_SIZE,
+						    " %s", umod->target->name);
+				strncat(tmp, sourceName, memFree - cAppend);
 			}
-		pr_info("\n");
+		strncat(tmp, "\n", 1);
+		strcat(lw->buffer, tmp);
 	}
+	kfree(tmp);
 	/* wake_up(&wait_queue); */
 }
 
@@ -141,8 +149,20 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 
 	case KEYSERLSMOD:
 		pr_info("[KEYSERLSMOD]\n");
+		lsmodcond = 0;
+		lsmodWorker->buffer = kmalloc(STRING_SIZE, GFP_KERNEL);
+
 		schedule_work(&lsmodWorker->work);
+		flush_work(&lsmodWorker->work);
 		/* wait_event(wait_queue, lsmodcond); */
+
+		if (copy_to_user((char *)arg, lsmodWorker->buffer,
+				 STRING_SIZE) > 0) {
+			pr_info("[KEYSERLSMOD] Error copy_to_user\n");
+			return -EACCES;
+		}
+
+		kfree(lsmodWorker->buffer);
 
 		break;
 
@@ -185,7 +205,7 @@ const struct file_operations fops = {
 
 static int __init keyser_init(void)
 {
-	pr_info("[KEYSER] INIT\n");
+	pr_info("[KEYSER] Load Module\n");
 	Major = register_chrdev(0, name, &fops);
 
 	pr_info("%s The major device number is %d.\n",
@@ -212,7 +232,7 @@ static void __exit keyser_exit(void)
 	kfree(meminfoWorker);
 
 	unregister_chrdev(Major, name);
-	pr_info("[KEYSER] EXIT\n");
+	pr_info("[KEYSER] Unload Module\n");
 }
 
 module_init(keyser_init);

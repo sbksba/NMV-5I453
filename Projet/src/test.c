@@ -34,8 +34,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 	int file = open("/dev/KeyserSoze", O_RDONLY);
 	char soze[81];
+	char lsmod[STRING_SIZE];
 	keyser_data_t kd;
 	struct sysinfo mysysinfo;
+
+	/* Don't look or your eyes were bleeding */
+	char m[7] = "Module";
+	char s[5] = "Size";
+	char u[8] = "Used by";
+	/* ===================================== */
 
 	switch (key)
 	{
@@ -46,7 +53,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		break;
 	case 'l':
 		/* printf("[LSMOD] not working correctly\n"); */
-		ioctl(file, KEYSERLSMOD, NULL);
+		ioctl(file, KEYSERLSMOD, &lsmod);
+		printf("%-10s%20s %4s\n", m, s, u);
+		printf("%s", lsmod);
 		break;
 	case 'm':
 		ioctl(file, KEYSERMEMINFO, &mysysinfo);
