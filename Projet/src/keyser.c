@@ -79,18 +79,26 @@ static void keyserLsmod(struct work_struct *work)
 	struct module *mod;
 	struct module_use *umod;
 
-	pr_info("Module                  Size  modstruct     Used by\n");
+	/* Don't look or your eyes were bleeding */
+	char *m = "Module";
+	char *s = "Size";
+	char *u = "Used by";
 
-	list_for_each_entry(mod, *(&THIS_MODULE->list.prev), list) {
-		if (mod->state == MODULE_STATE_UNFORMED)
-			continue;
-		pr_info("%-20s%8u%8u ", mod->name, mod->core_size, mod->init_size);
+	pr_info("%-10s%20s %4s", m, s, u);
+	/* ===================================== */
+	/* pr_info("Module                Size   Used by\n"); */
 
-		list_for_each_entry(umod, &mod->source_list, source_list) {
-			pr_info("%s", umod->target->name);
-		}
+	list_for_each_entry(mod, &modules, list) {
+		/* if (mod->state == MODULE_STATE_UNFORMED) */
+		/* 	continue; */
+		pr_info("%-10s%20u%4u ", mod->name, mod->core_size, mod->init_size);
+
+		if (mod->init_size > 0)
+			list_for_each_entry(umod, &mod->source_list, source_list) {
+				pr_info("%s", umod->target->name);
+			}
+		pr_info("\n");
 	}
-	pr_info("\n");
 	/* wake_up(&wait_queue); */
 }
 
