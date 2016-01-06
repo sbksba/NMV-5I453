@@ -23,13 +23,13 @@ Utilisation
 Usage: TEST [OPTION...] SIGNAL PID
 Test -- a program for use the Keyser Module
 
-  -k, --kill                 Kill a proc
-  -l, --lsmod                Print the list of modules
-  -m, --meminfo              Print the information about the memory
-  -s, --soze                 Find yourself
-  -?, --help                 Give this help list
-  --usage                    Give a short usage message
-  -V, --version              Print program version
+  -k, --kill                 Kill a proc     
+  -l, --lsmod                Print the list of modules     
+  -m, --meminfo              Print the information about the memory     
+  -s, --soze                 Find yourself     
+  -?, --help                 Give this help list     
+  --usage                    Give a short usage message     
+  -V, --version              Print program version     
 
 
 La commande kill est suivie du numéro du signal ainsi que du pid du processus à tuer.
