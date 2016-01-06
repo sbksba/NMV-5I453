@@ -12,11 +12,11 @@ L'objectif de ce projet est de réaliser un outil en ligne de commmande capable 
 
 Les fonctionnalités du programme sont les suivantes :
 
-* [kill]    - Permet de tuer un processus
-* [lsmod]   - Permet d'afficher la liste des modules chargés
-* [meminfo] - Permet d'afficher les informations concernant la mémoire
-* [wait]    - Permet d'attendre la terminaison d'un processus dans une liste de processus
-* [waitall] - Permet d'attendre la terminaison de tous les processus passés en paramètre
+* [ kill ]    - Permet de tuer un processus
+* [ lsmod ]   - Permet d'afficher la liste des modules chargés
+* [ meminfo ] - Permet d'afficher les informations concernant la mémoire
+* [ wait ]    - Permet d'attendre la terminaison d'un processus dans une liste de processus
+* [ waitall ] - Permet d'attendre la terminaison de tous les processus passés en paramètre
 
 Utilisation
 -----------
