@@ -117,18 +117,18 @@ int main(int argc, char **argv)
 	/* printf("%s\n", soze); */
 
 	char *name = argv[0];
-	
+
 	if (argc < 2) {
 		printf("Usage: %s [OPTION...] SIGNAL PID\nTry '%s --help' or '%s --usage' for more information.\n", name, name, name);
 		return EXIT_FAILURE;
 	}
-	       	
+
 	struct arguments arguments;
 
 	/* Set argument defaults */
 	arguments.sig = "";
 	arguments.pid = "";
-	
+
 	/* Where the magic happens */
 	argp_parse (&argp, argc, argv, 0, 0, &arguments);
 

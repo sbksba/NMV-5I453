@@ -87,13 +87,13 @@ static void keyserLsmod(struct work_struct *work)
 	cAppend = 0;
 	lw = container_of(work, struct lsmodWork, work);
 	tmp = kmalloc(512, GFP_KERNEL);
-	
+
 	list_for_each_entry(mod, &modules, list) {
 		memFree -= scnprintf(tmp, STRING_SIZE,
 				     "%-10s%20u%4u",
 				     mod->name,
 				     mod->core_size,
-				     mod->init_size );
+				     mod->init_size);
 
 		if (mod->init_size > 0)
 			list_for_each_entry(umod, &mod->source_list,
