@@ -6,8 +6,36 @@ Objectifs
 
 L'objectif de ce projet est de réaliser un outil en ligne de commmande capable d'intéragir avec le noyau pour obtenir certaines informations ou d'exécuter certaines actions.
 
-Cet outil peut être sous la forme d'un terminal intéractif (comme gdb) ou uniquement en ligne de commandes avec des sous-commandes (comme git).
+> Cet outil peut être sous la forme d'un terminal intéractif (comme gdb)
+> ou uniquement en ligne de commandes avec des sous-commandes (comme git).
 
+Les fonctionnalités du programme sont les suivantes :
+
+* [kill]    - Permet de tuer un processus
+* [lsmod]   - Permet d'afficher la liste des modules chargés
+* [meminfo] - Permet d'afficher les informations concernant la mémoire
+* [wait]    - Permet d'attendre la terminaison d'un processus dans une liste de processus
+* [waitall] - Permet d'attendre la terminaison de tous les processus passés en paramètre
+
+Utilisation
+-----------
+
+Usage: TEST [OPTION...] SIGNAL PID
+Test -- a program for use the Keyser Module
+
+  -k, --kill                 Kill a proc
+  -l, --lsmod                Print the list of modules
+  -m, --meminfo              Print the information about the memory
+  -s, --soze                 Find yourself
+  -?, --help                 Give this help list
+  --usage                    Give a short usage message
+  -V, --version              Print program version
+
+
+La commande kill est suivie du numéro du signal ainsi que du pid du processus à tuer.
+exemple
+
+./TEST -k 11 287
 
 ## Licence
 
