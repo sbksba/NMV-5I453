@@ -61,8 +61,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		arguments->args[state->arg_num] = arg;
 		break;
 	case ARGP_KEY_END:
-		if (state->arg_num < 2)
-			argp_usage(state);
+		/* if (state->arg_num < 2) */
+		/* 	argp_usage(state); */
 		break;
 	default:
 		return ARGP_ERR_UNKNOWN;
@@ -106,6 +106,11 @@ int main(int argc, char **argv)
 	/* ioctl(file, SOZE, &soze); */
 	/* printf("%s\n", soze); */
 
+	if (argc < 2) {
+		printf("Usage: %s [OPTION...] SIGNAL PID\nTry `%s --help' or `%s --usage' for more information.\n", argv[0], argv[0]);
+		return EXIT_FAILURE;
+	}
+	       	
 	struct arguments arguments;
 
 	/* Set argument defaults */
