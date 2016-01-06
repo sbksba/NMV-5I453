@@ -36,7 +36,7 @@ Test -- a program for use the Keyser Module
 La commande kill est suivie du numéro du signal ainsi que du pid du processus à tuer.
 exemple
 
-./TEST -k 11 655
+./TEST -k 11 666
 
 ## Licence
 
