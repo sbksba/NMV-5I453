@@ -107,8 +107,10 @@ int main(int argc, char **argv)
 	/* ioctl(file, SOZE, &soze); */
 	/* printf("%s\n", soze); */
 
+	char *name = argv[0];
+	
 	if (argc < 2) {
-		printf("Usage: %s [OPTION...] SIGNAL PID\nTry `%s --help' or `%s --usage' for more information.\n", argv[0], argv[0]);
+		printf("Usage: %s [OPTION...] SIGNAL PID\nTry '%s --help' or '%s --usage' for more information.\n", name, name, name);
 		return EXIT_FAILURE;
 	}
 	       	
