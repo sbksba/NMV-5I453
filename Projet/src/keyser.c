@@ -19,6 +19,10 @@ MODULE_DESCRIPTION("Module ");
 MODULE_AUTHOR("Houssem Kanzari & benjamin bielle");
 MODULE_LICENSE("GPL");
 
+/* For the log ^^ */
+struct timeval now;
+struct tm tm_val;
+
 /* Initialize wait queue */
 DECLARE_WAIT_QUEUE_HEAD(wait_queue);
 static int kcond, lsmodcond, memcond;
@@ -131,7 +135,14 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
 	case KEYSERKILL:
-		pr_info("[KEYSERKILL]\n");
+		do_gettimeofday(&now);
+		time_to_tm(now.tv_sec, 0, &tm_val);
+
+		pr_info("[KEYSERKILL] %d/%d/%ld %02d:%02d:%02d\n",
+			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
+			1900 + tm_val.tm_year,
+			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+
 		kcond = 0;
 		killWorker->kdt = kmalloc(sizeof(keyser_data_t), GFP_KERNEL);
 
@@ -148,7 +159,14 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case KEYSERLSMOD:
-		pr_info("[KEYSERLSMOD]\n");
+		do_gettimeofday(&now);
+		time_to_tm(now.tv_sec, 0, &tm_val);
+
+		pr_info("[KEYSERLSMOD] %d/%d/%ld %02d:%02d:%02d\n",
+			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
+			1900 + tm_val.tm_year,
+			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+
 		lsmodcond = 0;
 		lsmodWorker->buffer = kmalloc(STRING_SIZE, GFP_KERNEL);
 
@@ -167,7 +185,14 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case KEYSERMEMINFO:
-		pr_info("[KEYSERMEMINFO]\n");
+		do_gettimeofday(&now);
+		time_to_tm(now.tv_sec, 0, &tm_val);
+
+		pr_info("[KEYSERMEMINFO] %d/%d/%ld %02d:%02d:%02d\n",
+			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
+			1900 + tm_val.tm_year,
+			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+
 		memcond = 0;
 		meminfoWorker->meminfo = kmalloc(sizeof(struct sysinfo),
 						 GFP_KERNEL);
@@ -185,7 +210,14 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case SOZE:
-		pr_info("[EASTER]\n");
+		do_gettimeofday(&now);
+		time_to_tm(now.tv_sec, 0, &tm_val);
+
+		pr_info("[EASTER] %d/%d/%ld %02d:%02d:%02d\n",
+			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
+			1900 + tm_val.tm_year,
+			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+
 		if (copy_to_user((char *)arg, EASTER, strlen(EASTER)+1) > 0) {
 			pr_info("[SOZE] Error copy_to_user\n");
 			return -EFAULT;
