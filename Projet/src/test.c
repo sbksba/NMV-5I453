@@ -13,6 +13,21 @@
 
 #include "keyser.h"
 
+/**
+ * Print the information
+ * @mem : just the information from the module keyser
+ */
+void printMeminfo(struct sysinfo mem)
+{
+	printf("total ram           :%8lu\n", mem.totalram);
+	printf("shared ram          :%8lu\n", mem.sharedram);
+	printf("free ram            :%8lu\n", mem.freeram);
+	printf("buffer ram          :%8lu\n", mem.bufferram);
+	printf("total high          :%8lu\n", mem.totalhigh);
+	printf("free (avail) high   :%8lu\n", mem.freehigh);
+	printf("mem unit            :%8i\n",  mem.mem_unit);
+}
+
 struct arguments {
 	char *args[2];
 	char *sig, *pid;
@@ -57,7 +72,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		break;
 	case 'm':
 		ioctl(file, KEYSERMEMINFO, &mysysinfo);
-		printf("MemTotal : %8lu\n", mysysinfo.totalram);
+		printMeminfo(mysysinfo);
 		break;
 	case 's':
 		ioctl(file, SOZE, &soze);
