@@ -43,6 +43,10 @@ static struct argp_option options[] = {
 		{"lsmod", 'l', 0, 0, "Print the list of modules"},
 		{"meminfo", 'm', 0, 0,
 		 "Print the information about the memory"},
+		{"wait", 'w', 0, 0,
+		 "Expect the end of a process, and only one"},
+		{"waitall", 'a', 0, 0,
+		 "Expect the end of all process"},
 		{"soze", 's', 0, 0, "Find yourself"},
 		{0}
 };
@@ -82,6 +86,12 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	case 's':
 		ioctl(file, SOZE, &soze);
 		printf("%s\n", soze);
+		break;
+	case 'w':
+		ioctl(file, KEYSERWAIT, NULL);
+		break;
+	case 'a':
+		ioctl(file, KEYSERWAITALL, NULL);
 		break;
 	case ARGP_KEY_ARG:
 		if (state->arg_num > 2)

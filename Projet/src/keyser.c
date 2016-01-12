@@ -132,6 +132,22 @@ static void keyserMeminfo(struct work_struct *work)
 	}
 }
 
+/**
+ * Expect the end of a process, and only one process
+ * @work : just a work_queue
+ */
+static void keyserWait(struct work_struct *work)
+{
+}
+
+/**
+ * Expect the end of all process
+ * @work : just a work_queue
+ */
+static void keyserWaitAll(struct work_struct *work)
+{
+}
+
 long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	char *date;
@@ -199,6 +215,14 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 
 		kfree(meminfoWorker->kmt);
 
+		break;
+		
+	case KEYSERWAIT:
+		pr_info("[KEYSERWAIT] %s", date);
+		break;
+		
+	case KEYSERWAITALL:
+		pr_info("[KEYSERWAITALL] %s", date);
 		break;
 
 	case SOZE:
