@@ -15,9 +15,14 @@ typedef struct {
 	int sig;
 } keyser_data_t;
 
+typedef struct {
+	int page;
+	struct sysinfo meminfo;
+} keyser_mem_t;
+
 #define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
 #define KEYSERLSMOD _IOR(MAGIC, 1, char *)
-#define KEYSERMEMINFO _IOR(MAGIC, 2, struct sysinfo)
+#define KEYSERMEMINFO _IOR(MAGIC, 2, keyser_mem_t *)
 #define SOZE _IOR(MAGIC, 3, void *)
 
 #endif

@@ -17,15 +17,20 @@
  * Print the information
  * @mem : just the information from the module keyser
  */
-void printMeminfo(struct sysinfo mem)
+void printMeminfo(keyser_mem_t mem)
 {
-	printf("total ram           :%8lu\n", mem.totalram);
-	printf("shared ram          :%8lu\n", mem.sharedram);
-	printf("free ram            :%8lu\n", mem.freeram);
-	printf("buffer ram          :%8lu\n", mem.bufferram);
-	printf("total high          :%8lu\n", mem.totalhigh);
-	printf("free (avail) high   :%8lu\n", mem.freehigh);
-	printf("mem unit            :%8i\n",  mem.mem_unit);
+#define K(x) ((x) << (mem.page - 10))
+	printf("MemTotal  :%8lu kB\n", K(mem.meminfo.totalram));
+	printf("MemFree   :%8lu kB\n", K(mem.meminfo.freeram));
+	printf("Buffers   :%8lu kB\n", K(mem.meminfo.bufferram));
+	printf("HighTotal :%8lu kB\n", K(mem.meminfo.totalhigh));
+	printf("HighFree  :%8lu kB\n", K(mem.meminfo.freehigh));
+	printf("LowTotal  :%8lu kB\n", K(mem.meminfo.totalram - mem.meminfo.totalhigh));
+	printf("LowFree   :%8lu kB\n", K(mem.meminfo.freeram - mem.meminfo.freehigh));
+	printf("Shmem     :%8lu kB\n", K(mem.meminfo.sharedram));
+	printf("SwapTotal :%8lu kB\n", K(mem.meminfo.totalswap));
+	printf("SwapFree  :%8lu kB\n", K(mem.meminfo.freeswap));
+	/*printf("MemUnit   :%8i kB\n",  mem.meminfo.mem_unit);*/
 }
 
 struct arguments {
@@ -50,7 +55,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	char soze[81];
 	char lsmod[STRING_SIZE];
 	keyser_data_t kd;
-	struct sysinfo mysysinfo;
+	keyser_mem_t km;
 
 	/* Don't look or your eyes were bleeding */
 	char m[7] = "Module";
@@ -71,8 +76,8 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		printf("%s", lsmod);
 		break;
 	case 'm':
-		ioctl(file, KEYSERMEMINFO, &mysysinfo);
-		printMeminfo(mysysinfo);
+		ioctl(file, KEYSERMEMINFO, &km);
+		printMeminfo(km);
 		break;
 	case 's':
 		ioctl(file, SOZE, &soze);

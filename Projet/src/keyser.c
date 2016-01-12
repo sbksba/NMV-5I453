@@ -39,7 +39,7 @@ struct lsmodWork {
 };
 
 struct meminfoWork {
-	struct sysinfo *meminfo;
+	keyser_mem_t *kmt;
 	struct work_struct work;
 };
 
@@ -123,7 +123,8 @@ static void keyserMeminfo(struct work_struct *work)
 	struct meminfoWork *mw;
 
 	mw = container_of(work, struct meminfoWork, work);
-	si_meminfo(mw->meminfo);
+	mw->kmt->page = PAGE_SHIFT;
+	si_meminfo(&mw->kmt->meminfo);
 
 	if (!memcond) {
 		memcond = 1;
@@ -133,15 +134,19 @@ static void keyserMeminfo(struct work_struct *work)
 
 long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 {
+	char *date;
+
+      	date = kmalloc(512, GFP_KERNEL);
+	do_gettimeofday(&now);
+	time_to_tm(now.tv_sec, 0, &tm_val);
+	scnprintf(date, STRING_SIZE, "%d/%d/%ld %02d:%02d:%02d\n",
+		  tm_val.tm_yday + 1, tm_val.tm_mon + 1,
+		  1900 + tm_val.tm_year,
+		  tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+		
 	switch (cmd) {
 	case KEYSERKILL:
-		do_gettimeofday(&now);
-		time_to_tm(now.tv_sec, 0, &tm_val);
-
-		pr_info("[KEYSERKILL] %d/%d/%ld %02d:%02d:%02d\n",
-			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
-			1900 + tm_val.tm_year,
-			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+		pr_info("[KEYSERKILL] %s", date);
 
 		kcond = 0;
 		killWorker->kdt = kmalloc(sizeof(keyser_data_t), GFP_KERNEL);
@@ -159,13 +164,7 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case KEYSERLSMOD:
-		do_gettimeofday(&now);
-		time_to_tm(now.tv_sec, 0, &tm_val);
-
-		pr_info("[KEYSERLSMOD] %d/%d/%ld %02d:%02d:%02d\n",
-			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
-			1900 + tm_val.tm_year,
-			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+		pr_info("[KEYSERLSMOD] %s", date);
 
 		lsmodcond = 0;
 		lsmodWorker->buffer = kmalloc(STRING_SIZE, GFP_KERNEL);
@@ -185,38 +184,25 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		break;
 
 	case KEYSERMEMINFO:
-		do_gettimeofday(&now);
-		time_to_tm(now.tv_sec, 0, &tm_val);
-
-		pr_info("[KEYSERMEMINFO] %d/%d/%ld %02d:%02d:%02d\n",
-			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
-			1900 + tm_val.tm_year,
-			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+		pr_info("[KEYSERMEMINFO] %s", date);
 
 		memcond = 0;
-		meminfoWorker->meminfo = kmalloc(sizeof(struct sysinfo),
-						 GFP_KERNEL);
+		meminfoWorker->kmt = kmalloc(sizeof(keyser_mem_t), GFP_KERNEL);
 		schedule_work(&meminfoWorker->work);
 		wait_event(wait_queue, memcond);
 
-		if (copy_to_user((char *)arg, meminfoWorker->meminfo,
-				 sizeof(struct sysinfo)) > 0) {
+		if (copy_to_user((char *)arg, meminfoWorker->kmt,
+				 sizeof(keyser_mem_t)) > 0) {
 			pr_info("[KEYSERMEMINFO] Error copy_to_user\n");
 			return -EFAULT;
 		}
 
-		kfree(meminfoWorker->meminfo);
+		kfree(meminfoWorker->kmt);
 
 		break;
 
 	case SOZE:
-		do_gettimeofday(&now);
-		time_to_tm(now.tv_sec, 0, &tm_val);
-
-		pr_info("[EASTER] %d/%d/%ld %02d:%02d:%02d\n",
-			tm_val.tm_yday + 1, tm_val.tm_mon + 1,
-			1900 + tm_val.tm_year,
-			tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
+		pr_info("[EASTER] %s", date);
 
 		if (copy_to_user((char *)arg, EASTER, strlen(EASTER)+1) > 0) {
 			pr_info("[SOZE] Error copy_to_user\n");
@@ -228,6 +214,7 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		return -ENOTTY;
 	}
 
+	kfree(date);
 	return 0;
 }
 
