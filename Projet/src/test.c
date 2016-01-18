@@ -13,6 +13,9 @@
 
 #include "keyser.h"
 
+/* Number of proc to wait */
+int NBProc;
+
 /**
  * Print the information
  * @mem : just the information from the module keyser
@@ -60,6 +63,8 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	char lsmod[STRING_SIZE];
 	keyser_data_t kd;
 	keyser_mem_t km;
+	keyser_wait_t kw;
+	int i;
 
 	/* Don't look or your eyes were bleeding */
 	char m[7] = "Module";
@@ -88,9 +93,18 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		printf("%s\n", soze);
 		break;
 	case 'w':
-		ioctl(file, KEYSERWAIT, NULL);
+		kw.cpt = NBProc;
+                for (i=0; i<NBProc; i++) {
+                        kw.list_pid[i] = atoi(state->argv[(state->next)+i]);
+                }
+                ioctl(file, KEYSERWAIT, &kw);
 		break;
 	case 'a':
+		kw.cpt = NBProc;
+                for (i=0; i<NBProc; i++) {
+                        kw.list_pid[i] = atoi(state->argv[(state->next)+i]);
+                }
+                ioctl(file, KEYSERWAIT, &kw);
 		ioctl(file, KEYSERWAITALL, NULL);
 		break;
 	case ARGP_KEY_ARG:
@@ -107,7 +121,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	return 0;
 }
 
-static const char args_doc[] = "SIGNAL PID";
+static const char args_doc[] = "(SIGNAL PID) OR (LIST of PID)";
 const char *argp_program_version = "test 1.0";
 
 /* Program Documentation */
@@ -122,7 +136,7 @@ int main(int argc, char **argv)
 	char *name = argv[0];
 
 	if (argc < 2) {
-		printf("Usage: %s [OPTION...] SIGNAL PID\n \
+		printf("Usage: %s [OPTION...] (SIGNAL PID) OR (LIST of PID)\n \
 Try '%s --help' or '%s --usage' for more information.\n", name, name, name);
 		return EXIT_FAILURE;
 	}

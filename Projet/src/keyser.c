@@ -25,7 +25,7 @@ struct tm tm_val;
 
 /* Initialize wait queue */
 DECLARE_WAIT_QUEUE_HEAD(wait_queue);
-static int kcond, lsmodcond, memcond;
+static int kcond, lsmodcond, memcond, waitcond, waitAllcond;
 
 /* Struct for the features */
 struct killWork {
@@ -43,9 +43,30 @@ struct meminfoWork {
 	struct work_struct work;
 };
 
+struct waitWork {
+        keyser_wait_t *kwt;
+        struct delayed_work work;
+};
+
+struct waitAllWork {
+        keyser_wait_t *kwt;
+        struct delayed_work work;
+};
+
 struct killWork *killWorker;
 struct lsmodWork *lsmodWorker;
 struct meminfoWork *meminfoWorker;
+struct waitWork *waitWorker;
+struct waitAllWork *waitAllWorker;
+
+/**
+ * Schedule Fonction
+ */
+void schedule()
+{
+        if (!schedule_delayed_work(&waitWorker->work, 100))
+		pr_err("[SCHEDULE] delayed work failed\n");
+}
 
 /**
  * Kill a proc
@@ -138,6 +159,24 @@ static void keyserMeminfo(struct work_struct *work)
  */
 static void keyserWait(struct work_struct *work)
 {
+	int i;
+        struct waitWork *ww;
+
+        ww = container_of(work, struct waitWork, work);
+
+        for (i=0; i<ww->kwt->cpt; i++) {
+                if (pid_alive(ww->kwt->list_pid[i])) {
+                        pr_info("[WAIT] %d is alive\n", ww->kwt->list_pid[i]);
+		} else {
+                        waitcond = 1;
+                        wake_up(&wait_queue);
+			break;
+                }
+        }
+
+        if (!waitcond)
+                schedule();
+
 }
 
 /**
@@ -159,7 +198,7 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		  tm_val.tm_yday + 1, tm_val.tm_mon + 1,
 		  1900 + tm_val.tm_year,
 		  tm_val.tm_hour + 1, tm_val.tm_min, tm_val.tm_sec);
-		
+
 	switch (cmd) {
 	case KEYSERKILL:
 		pr_info("[KEYSERKILL] %s", date);
@@ -216,11 +255,26 @@ long device_cmd(struct file *filp, unsigned int cmd, unsigned long arg)
 		kfree(meminfoWorker->kmt);
 
 		break;
-		
+
 	case KEYSERWAIT:
 		pr_info("[KEYSERWAIT] %s", date);
+
+		waitcond = 0;
+                waitWorker->kwt = kmalloc(sizeof(keyser_wait_t), GFP_KERNEL);
+
+		if (copy_from_user(waitWorker->kwt, (keyser_wait_t *)arg,
+                                   sizeof(keyser_data_t))) {
+			pr_err("[KEYSERWAIT] Error copy_from_user\n");
+                        return -EACCES;
+		}
+
+		schedule_work(&waitWorker->work);
+                wait_event(wait_queue, waitcond);
+
+		kfree(waitWorker->kwt);
+
 		break;
-		
+
 	case KEYSERWAITALL:
 		pr_info("[KEYSERWAITALL] %s", date);
 		break;
@@ -258,11 +312,15 @@ static int __init keyser_init(void)
 	killWorker    = kmalloc(sizeof(struct killWork), GFP_KERNEL);
 	lsmodWorker   = kmalloc(sizeof(struct lsmodWork), GFP_KERNEL);
 	meminfoWorker = kmalloc(sizeof(struct meminfoWork), GFP_KERNEL);
+	waitWorker    = kmalloc(sizeof(struct waitWork), GFP_KERNEL);
+	waitAllWorker = kmalloc(sizeof(struct waitAllWork), GFP_KERNEL);
 
 	/* Initialize the workqueue */
 	INIT_WORK(&killWorker->work, keyserKill);
 	INIT_WORK(&lsmodWorker->work, keyserLsmod);
 	INIT_WORK(&meminfoWorker->work, keyserMeminfo);
+	INIT_DELAYED_WORK(&waitWorker->work, keyserWait);
+	INIT_DELAYED_WORK(&waitAllWorker->work, keyserWaitAll);
 
 	return 0;
 }
@@ -273,6 +331,8 @@ static void __exit keyser_exit(void)
 	kfree(killWorker);
 	kfree(lsmodWorker);
 	kfree(meminfoWorker);
+	kfree(waitWorker);
+        kfree(waitAllWorker);
 
 	unregister_chrdev(Major, name);
 	pr_info("[KEYSER] Unload Module\n");

@@ -20,11 +20,18 @@ typedef struct {
 	struct sysinfo meminfo;
 } keyser_mem_t;
 
+typedef struct {
+        int cpt;
+        int list_pid[8];
+} keyser_wait_t;
+
 #define KEYSERKILL _IOR(MAGIC, 0, keyser_data_t *)
 #define KEYSERLSMOD _IOR(MAGIC, 1, char *)
 #define KEYSERMEMINFO _IOR(MAGIC, 2, keyser_mem_t *)
 #define KEYSERWAIT _IOR(MAGIC, 3, void *)
 #define KEYSERWAITALL _IOR(MAGIC, 4, void *)
 #define SOZE _IOR(MAGIC, 5, void *)
+
+#define IOC_MAXNR 6
 
 #endif
