@@ -24,10 +24,12 @@ Utilisation
 Usage: TEST [OPTION...] SIGNAL PID
 Test -- a program for use the Keyser Module
 
+  -a, --waitall              Expect the end of all process        
   -k, --kill                 Kill a proc     
   -l, --lsmod                Print the list of modules     
   -m, --meminfo              Print the information about the memory     
-  -s, --soze                 Find yourself     
+  -s, --soze                 Find yourself
+  -w, --wait                 Expect the end of a process, and only one            
   -?, --help                 Give this help list     
   --usage                    Give a short usage message     
   -V, --version              Print program version     
@@ -37,6 +39,11 @@ La commande kill est suivie du numéro du signal ainsi que du pid du processus �
 exemple
 
 ./TEST -k 11 666
+
+Les commandes waitall et wait sont suivie de la liste des pid à attendre.
+exemple
+
+./Test -w 666 777 888
 
 ## Licence
 
